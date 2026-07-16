@@ -152,6 +152,21 @@
     /* ===================== 숙소 (타이틀 위 아이콘 제거) ===================== */
     .lodging h3 { margin: 0 0 6px; font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
     .lodging .sub { margin: 0; color: var(--text-soft); font-size: 14px; line-height: 1.5; }
+    .addr-row { display: flex; align-items: center; gap: 8px; }
+    .addr-row .sub { flex: 1; min-width: 0; }
+    .copy-btn {
+      flex: none; appearance: none; cursor: pointer;
+      width: 34px; height: 34px; border-radius: 9px;
+      background: var(--surface-2); border: 1px solid var(--border); color: var(--text-soft);
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .copy-btn:active { filter: brightness(1.2); }
+    .copy-btn .ico-check { display: none; color: var(--ok); }
+    .copy-btn.copied { border-color: var(--ok); color: var(--ok); }
+    .copy-btn.copied .ico-copy { display: none; }
+    .copy-btn.copied .ico-check { display: inline; }
+    .addr-warn { margin: 10px 0 0; font-size: 13px; line-height: 1.5; color: var(--accent); }
+    .addr-warn b { font-weight: 700; }
     .info { margin: 16px 0 18px; padding-top: 16px; border-top: 1px solid var(--border-soft); display: flex; flex-direction: column; gap: 12px; }
     .info-row { display: flex; gap: 12px; align-items: baseline; }
     .info-row dt { flex: none; width: 58px; font-size: 13px; color: var(--text-faint); font-weight: 600; }
@@ -301,7 +316,14 @@
           <h2 class="sec-title">숙소</h2>
           <div class="card lodging">
             <h3 id="lodgingName">Airbnb 진주</h3>
-            <p class="sub" id="lodgingAddr">경상남도 진주시 북장대로11번길 5</p>
+            <div class="addr-row">
+              <p class="sub" id="lodgingAddr">경상남도 진주시 북장대로11번길 5</p>
+              <button class="copy-btn" id="copyAddrBtn" type="button" aria-label="주소 복사" title="주소 복사">
+                <svg class="ico-copy" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <svg class="ico-check" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+              </button>
+            </div>
+            <p class="addr-warn">⚠️ 숙소명으로는 내비 검색이 안 됩니다. 위 <b>주소로 검색</b>해 주세요.</p>
             <dl class="info">
               <div class="info-row"><dt>체크인</dt><dd>8/22(토) 16:00</dd></div>
               <div class="info-row"><dt>체크아웃</dt><dd>8/23(일) 11:00</dd></div>
@@ -459,6 +481,27 @@
         [airbnb, map].forEach(b => { b.classList.remove("is-disabled"); b.removeAttribute("aria-disabled"); b.removeAttribute("tabindex"); });
       } else {
         [airbnb, map].forEach(b => { b.classList.add("is-disabled"); b.setAttribute("aria-disabled", "true"); b.setAttribute("tabindex", "-1"); b.removeAttribute("href"); });
+      }
+
+      // 주소 복사 버튼
+      const copyBtn = document.getElementById("copyAddrBtn");
+      if (copyBtn) {
+        copyBtn.addEventListener("click", async () => {
+          const addr = CONFIG.LODGING_ADDRESS || document.getElementById("lodgingAddr").textContent.trim();
+          let ok = false;
+          try { await navigator.clipboard.writeText(addr); ok = true; }
+          catch (e) {
+            const ta = document.createElement("textarea");
+            ta.value = addr; ta.style.position = "fixed"; ta.style.opacity = "0";
+            document.body.appendChild(ta); ta.focus(); ta.select();
+            try { ok = document.execCommand("copy"); } catch (_) {}
+            document.body.removeChild(ta);
+          }
+          if (ok) {
+            copyBtn.classList.add("copied");
+            setTimeout(() => copyBtn.classList.remove("copied"), 1500);
+          }
+        });
       }
     }
 
