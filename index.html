@@ -141,7 +141,7 @@
     .block { flex: none; }
 
     /* ===================== 일정 (깔끔한 텍스트, 이모지 없음) ===================== */
-    .sched { text-align: center; padding: 26px 20px; }
+    .sched { text-align: center; padding: 26px 20px 18px; }
     .sched-dates { display: flex; align-items: center; justify-content: center; gap: 22px; }
     .sd { display: flex; flex-direction: column; align-items: center; gap: 6px; }
     .sd-dow { font-size: 12.5px; color: var(--accent); font-weight: 700; letter-spacing: .05em; }
@@ -217,14 +217,16 @@
       font-size: 13px; font-weight: 700; color: var(--text-soft);
     }
     .group-head .cnt { color: var(--text-faint); font-weight: 600; }
-    .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+    /* 한 행에 4명 고정 — 화면 폭에 따라 글자 크기 자동 축소 */
+    .chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
     .chip {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 8px 13px; border-radius: 999px; font-size: 14.5px; font-weight: 600; line-height: 1;
+      display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+      padding: 8px 4px; border-radius: 999px; font-weight: 600; line-height: 1;
+      font-size: clamp(11px, 3.3vw, 15px); white-space: nowrap; min-width: 0;
     }
     .chip.stay { background: var(--navy); color: #eaf2fb; border: 1px solid #34557a; }
     .chip.day { background: transparent; color: var(--text-soft); border: 1px dashed var(--border); }
-    .chip-ico { font-size: 14px; line-height: 1; }
+    .chip-ico { font-size: clamp(11px, 3vw, 14px); line-height: 1; flex: none; }
 
     /* ===================== 정산 ===================== */
     .total-box {
@@ -577,17 +579,42 @@
     /* ======================================================
        탭 전환
        ====================================================== */
-    function setupTabs() {
-      const tabs = Array.from(document.querySelectorAll(".tab"));
-      const panels = { info: "p-info", people: "p-people", settle: "p-settle" };
-      tabs.forEach(tab => {
-        tab.addEventListener("click", () => {
-          tabs.forEach(t => t.setAttribute("aria-selected", String(t === tab)));
-          Object.entries(panels).forEach(([key, id]) => {
-            document.getElementById(id).classList.toggle("active", key === tab.dataset.tab);
-          });
-        });
+    const TAB_ORDER = ["info", "people", "settle"];
+    const TAB_PANELS = { info: "p-info", people: "p-people", settle: "p-settle" };
+
+    function activateTab(key) {
+      document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", String(t.dataset.tab === key)));
+      Object.entries(TAB_PANELS).forEach(([k, id]) => {
+        document.getElementById(id).classList.toggle("active", k === key);
       });
+    }
+    function currentTab() {
+      const sel = document.querySelector('.tab[aria-selected="true"]');
+      return sel ? sel.dataset.tab : "info";
+    }
+
+    function setupTabs() {
+      document.querySelectorAll(".tab").forEach(tab => {
+        tab.addEventListener("click", () => activateTab(tab.dataset.tab));
+      });
+
+      // 좌우 스와이프로 탭 전환 (왼쪽으로 밀면 다음 탭, 오른쪽으로 밀면 이전 탭)
+      const area = document.querySelector("main");
+      let sx = 0, sy = 0, tracking = false;
+      area.addEventListener("touchstart", (e) => {
+        if (e.touches.length !== 1) { tracking = false; return; }
+        sx = e.touches[0].clientX; sy = e.touches[0].clientY; tracking = true;
+      }, { passive: true });
+      area.addEventListener("touchend", (e) => {
+        if (!tracking) return;
+        tracking = false;
+        const dx = e.changedTouches[0].clientX - sx;
+        const dy = e.changedTouches[0].clientY - sy;
+        if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return; // 수평 스와이프만 인식
+        const idx = TAB_ORDER.indexOf(currentTab());
+        const next = idx + (dx < 0 ? 1 : -1);
+        if (next >= 0 && next < TAB_ORDER.length) activateTab(TAB_ORDER[next]);
+      }, { passive: true });
     }
 
     /* ======================================================
