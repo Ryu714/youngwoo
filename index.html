@@ -193,23 +193,15 @@
     .btn-ghost { background: var(--surface-2); color: var(--text); border-color: var(--border); }
     .btn.is-disabled { opacity: .4; pointer-events: none; cursor: default; filter: grayscale(.4); }
 
-    /* ===================== 참석 현황 ===================== */
-    .attend-hero {
-      text-align: center; padding: 20px;
-      background: linear-gradient(168deg, var(--navy-soft), var(--surface));
+    /* ===================== 참석 현황 (2×2 요약) ===================== */
+    .stat2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat-cell {
+      text-align: center; background: var(--surface-2);
+      border: 1px solid var(--border); border-radius: 13px; padding: 16px 8px;
     }
-    .attend-hero .big { font-size: 40px; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
-    .attend-hero .big .unit { font-size: 20px; font-weight: 700; color: var(--text-soft); margin-left: 2px; }
-    .attend-hero .cap { margin: 7px 0 0; font-size: 14px; color: var(--accent); font-weight: 600; letter-spacing: .02em; }
-
-    .split { display: flex; gap: 10px; }
-    .split .cell {
-      flex: 1; text-align: center; background: var(--surface-2);
-      border: 1px solid var(--border); border-radius: 13px; padding: 12px 8px;
-    }
-    .split .cell .n { display: block; font-size: 23px; font-weight: 800; letter-spacing: -.02em; }
-    .split .cell .t { display: block; font-size: 12px; color: var(--text-soft); margin-top: 3px; }
-    .split .cell.stay .n { color: var(--accent); }
+    .stat-cell .sn { display: block; font-size: 30px; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
+    .stat-cell .sn.accent { color: var(--accent); }
+    .stat-cell .sl { display: block; font-size: 12.5px; color: var(--text-soft); margin-top: 5px; }
 
     .groups { display: flex; flex-direction: column; gap: 14px; }
     .group-head {
@@ -355,13 +347,13 @@
 
       <!-- 참석 -->
       <section class="panel" id="p-people" role="tabpanel" aria-labelledby="tab-people">
-        <div class="block card attend-hero">
-          <div class="big" id="attendNum"><span class="skel" style="display:inline-block;width:60px;height:40px;">&nbsp;</span></div>
-          <p class="cap" id="attendCap">전원 참석</p>
-        </div>
-        <div class="block split">
-          <div class="cell stay"><span class="n" id="stayNum">—</span><span class="t">숙박</span></div>
-          <div class="cell day"><span class="n" id="dayNum">—</span><span class="t">당일 복귀</span></div>
+        <div class="block card">
+          <div class="stat2">
+            <div class="stat-cell"><span class="sn accent" id="cntAttend">—</span><span class="sl">참석</span></div>
+            <div class="stat-cell"><span class="sn" id="cntAbsent">—</span><span class="sl">불참</span></div>
+            <div class="stat-cell"><span class="sn" id="cntStay">—</span><span class="sl">숙박</span></div>
+            <div class="stat-cell"><span class="sn" id="cntDay">—</span><span class="sl">당일 복귀</span></div>
+          </div>
         </div>
         <div class="block">
           <h2 class="sec-title">숙박 구분</h2>
@@ -403,14 +395,14 @@
        FALLBACK 데이터 (fetch 실패 / URL 미설정 시)
        ====================================================== */
     const FALLBACK_ROSTER = [
-      { 이름: "강명훈", 숙박여부: "X" }, { 이름: "강병훈", 숙박여부: "O" },
-      { 이름: "김병화", 숙박여부: "O" }, { 이름: "김외국", 숙박여부: "X" },
-      { 이름: "류정훈", 숙박여부: "O" }, { 이름: "성윤택", 숙박여부: "O" },
-      { 이름: "양동민", 숙박여부: "O" }, { 이름: "이영태", 숙박여부: "O" },
-      { 이름: "이종길", 숙박여부: "O" }, { 이름: "정연섭", 숙박여부: "O" },
-      { 이름: "정연재", 숙박여부: "O" }, { 이름: "정의신", 숙박여부: "O" },
-      { 이름: "조격래", 숙박여부: "O" }, { 이름: "조철환", 숙박여부: "O" },
-      { 이름: "최정용", 숙박여부: "O" }, { 이름: "황진철", 숙박여부: "O" },
+      { 이름: "강명훈", 참석여부: "O", 숙박여부: "X" }, { 이름: "강병훈", 참석여부: "O", 숙박여부: "O" },
+      { 이름: "김병화", 참석여부: "O", 숙박여부: "O" }, { 이름: "김외국", 참석여부: "O", 숙박여부: "X" },
+      { 이름: "류정훈", 참석여부: "O", 숙박여부: "O" }, { 이름: "성윤택", 참석여부: "O", 숙박여부: "O" },
+      { 이름: "양동민", 참석여부: "O", 숙박여부: "O" }, { 이름: "이영태", 참석여부: "O", 숙박여부: "O" },
+      { 이름: "이종길", 참석여부: "O", 숙박여부: "O" }, { 이름: "정연섭", 참석여부: "O", 숙박여부: "O" },
+      { 이름: "정연재", 참석여부: "O", 숙박여부: "O" }, { 이름: "정의신", 참석여부: "O", 숙박여부: "O" },
+      { 이름: "조격래", 참석여부: "O", 숙박여부: "O" }, { 이름: "조철환", 참석여부: "O", 숙박여부: "O" },
+      { 이름: "최정용", 참석여부: "O", 숙박여부: "O" }, { 이름: "황진철", 참석여부: "O", 숙박여부: "O" },
     ];
     const FALLBACK_EXPENSE = [
       { 일자: "2026-08-22", 구분: "대납", 항목: "숙소비용 (킴스테이 1박)", 금액: "516000", 결제자: "정연재", 비고: "Airbnb 선결제", 상태: "" },
@@ -455,6 +447,8 @@
     function won(n) { return (Number(String(n).replace(/[^0-9.-]/g, "")) || 0).toLocaleString("ko-KR") + "원"; }
     function numOf(n) { return Number(String(n).replace(/[^0-9.-]/g, "")) || 0; }
     function isStay(p) { return String(p.숙박여부).toUpperCase().trim() === "O"; }
+    // 참석여부: 열이 없거나 비면 참석(O)으로 간주, 'X'만 불참
+    function isAttend(p) { const v = String(p.참석여부 ?? "").toUpperCase().trim(); return v === "" ? true : v === "O"; }
     function esc(s) { return String(s ?? "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])); }
 
     /* ======================================================
@@ -512,14 +506,15 @@
     }
 
     function renderRoster(roster) {
-      const total = roster.length;
-      const stayList = roster.filter(isStay);
-      const dayList = roster.filter(p => !isStay(p));
+      const attendList = roster.filter(isAttend);
+      const absentList = roster.filter(p => !isAttend(p));
+      const stayList = attendList.filter(isStay);       // 참석자 중 숙박
+      const dayList = attendList.filter(p => !isStay(p)); // 참석자 중 당일복귀
 
-      document.getElementById("attendNum").innerHTML = total + '<span class="unit">명</span>';
-      document.getElementById("attendCap").textContent = "전원 참석";
-      document.getElementById("stayNum").textContent = stayList.length;
-      document.getElementById("dayNum").textContent = dayList.length;
+      document.getElementById("cntAttend").textContent = attendList.length;
+      document.getElementById("cntAbsent").textContent = absentList.length;
+      document.getElementById("cntStay").textContent = stayList.length;
+      document.getElementById("cntDay").textContent = dayList.length;
 
       const chipHtml = (list, cls, icon) => `<div class="chips">` +
         list.map(p => `<span class="chip ${cls}"><span class="chip-ico">${icon}</span>${esc(p.이름)}</span>`).join("") + `</div>`;
@@ -542,7 +537,9 @@
       const daenapSum = expense.filter(e => e.구분 === "대납").reduce((s, e) => s + numOf(e.금액), 0);
       const total = gyebiSum + daenapSum;
 
-      const expItems = expense.length ? expense.map(e => {
+      // 지출 내역은 최신 날짜가 위로 오도록 내림차순 정렬 (합계/환급 계산은 순서 무관)
+      const expForList = [...expense].sort((a, b) => String(b.일자 || "").localeCompare(String(a.일자 || "")));
+      const expItems = expForList.length ? expForList.map(e => {
         const tag = e.구분 === "계비" ? `<span class="tag gyebi">계비</span>` : `<span class="tag daenap">대납</span>`;
         const sub = [e.일자, e.결제자 ? "결제 " + esc(e.결제자) : "", e.비고 ? esc(e.비고) : ""].filter(Boolean).join(" · ");
         return `<li class="exp-item"><div class="exp-main"><div class="name">${tag}${esc(e.항목)}</div><div class="sub">${sub}</div></div><div class="exp-amt">${won(e.금액)}</div></li>`;
