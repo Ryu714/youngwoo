@@ -167,6 +167,14 @@
     .copy-btn.copied .ico-check { display: inline; }
     .addr-warn { margin: 10px 0 0; font-size: 13px; line-height: 1.5; color: var(--accent); }
     .addr-warn b { font-weight: 700; }
+    .nav-row { display: flex; gap: 8px; margin-top: 12px; }
+    .navbtn {
+      flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 11px 6px; border-radius: 10px; font-size: 13.5px; font-weight: 600;
+      text-decoration: none; background: var(--surface-2); color: var(--text); border: 1px solid var(--border);
+    }
+    .navbtn:active { filter: brightness(1.2); }
+    .navbtn .nd { width: 8px; height: 8px; border-radius: 50%; flex: none; }
     .info { margin: 16px 0 18px; padding-top: 16px; border-top: 1px solid var(--border-soft); display: flex; flex-direction: column; gap: 12px; }
     .info-row { display: flex; gap: 12px; align-items: baseline; }
     .info-row dt { flex: none; width: 58px; font-size: 13px; color: var(--text-faint); font-weight: 600; }
@@ -323,7 +331,12 @@
                 <svg class="ico-check" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
               </button>
             </div>
-            <p class="addr-warn">⚠️ 숙소명으로는 내비 검색이 안 됩니다. 위 <b>주소로 검색</b>해 주세요.</p>
+            <p class="addr-warn">⚠️ 숙소명 내비 검색 불가. <b>주소로 검색</b>할 것.</p>
+            <div class="nav-row">
+              <a class="navbtn" id="naviTmap" rel="noopener"><span class="nd" style="background:#EC1C24"></span>T맵</a>
+              <a class="navbtn" id="naviNaver" rel="noopener"><span class="nd" style="background:#03C75A"></span>네이버지도</a>
+              <a class="navbtn" id="naviKakao" rel="noopener"><span class="nd" style="background:#FEE500"></span>카카오맵</a>
+            </div>
             <dl class="info">
               <div class="info-row"><dt>체크인</dt><dd>8/22(토) 16:00</dd></div>
               <div class="info-row"><dt>체크아웃</dt><dd>8/23(일) 11:00</dd></div>
@@ -331,8 +344,7 @@
               <div class="info-row"><dt>주차</dt><dd>주차장이 협소합니다. 자리가 없을 경우 북장대로변 주차구역을 이용해 주세요.</dd></div>
             </dl>
             <div class="btn-row">
-              <a class="btn btn-primary is-disabled" id="airbnbBtn" aria-disabled="true" tabindex="-1" target="_blank" rel="noopener">Airbnb</a>
-              <a class="btn btn-ghost is-disabled" id="mapBtn" aria-disabled="true" tabindex="-1" target="_blank" rel="noopener">네이버지도</a>
+              <a class="btn btn-primary" id="airbnbBtn" target="_blank" rel="noopener">Airbnb 숙소정보</a>
             </div>
           </div>
         </div>
@@ -379,13 +391,11 @@
       SHOW_SETTLEMENT: true,
 
       EVENT_START: "2026-08-22",
-      // 숙소 예약 확정 후 true 로 바꾸면 아래 버튼(Airbnb·네이버지도)이 활성화됩니다.
-      LODGING_LINKS_ENABLED: true,
       LODGING_NAME: "Airbnb 진주",
-      // ▼ '정확한 주소' — 네이버지도가 이 주소로 핀을 찍습니다.
       LODGING_ADDRESS: "경상남도 진주시 북장대로11번길 5",
-      // ▼ 주소를 모를 때 지도 검색에 쓸 대략 위치 (Airbnb 공개 좌표 기준: 진주시 상대동 부근)
-      LODGING_MAP_QUERY: "경상남도 진주시 상대동",
+      // 내비 바로가기(T맵/네이버/카카오)용 좌표 — 위 주소 지오코딩 결과
+      LODGING_LAT: 35.19111,
+      LODGING_LNG: 128.07434,
       AIRBNB_URL: "https://www.airbnb.co.kr/rooms/1054867816529566158?check_in=2026-08-22&check_out=2026-08-23&guests=1&adults=12&s=67&unique_share_id=e334120e-8461-4621-a729-bac4d83aa94b",
     };
 
@@ -471,17 +481,14 @@
       if (CONFIG.LODGING_ADDRESS) {
         document.getElementById("lodgingAddr").textContent = CONFIG.LODGING_ADDRESS;
       }
-      const airbnb = document.getElementById("airbnbBtn");
-      const map = document.getElementById("mapBtn");
-      if (CONFIG.LODGING_LINKS_ENABLED) {
-        airbnb.href = CONFIG.AIRBNB_URL;
-        // 주소 > 대략위치 > 숙소명 순으로 네이버지도 검색
-        const query = CONFIG.LODGING_ADDRESS || CONFIG.LODGING_MAP_QUERY || CONFIG.LODGING_NAME;
-        map.href = "https://map.naver.com/p/search/" + encodeURIComponent(query);
-        [airbnb, map].forEach(b => { b.classList.remove("is-disabled"); b.removeAttribute("aria-disabled"); b.removeAttribute("tabindex"); });
-      } else {
-        [airbnb, map].forEach(b => { b.classList.add("is-disabled"); b.setAttribute("aria-disabled", "true"); b.setAttribute("tabindex", "-1"); b.removeAttribute("href"); });
-      }
+      document.getElementById("airbnbBtn").href = CONFIG.AIRBNB_URL;
+
+      // 내비 바로가기 — 위 주소/좌표로 (앱 설치 시 해당 앱 실행)
+      const name = encodeURIComponent(CONFIG.LODGING_NAME);
+      const lat = CONFIG.LODGING_LAT, lng = CONFIG.LODGING_LNG;
+      document.getElementById("naviTmap").href  = `tmap://route?goalname=${name}&goalx=${lng}&goaly=${lat}`;
+      document.getElementById("naviNaver").href = `nmap://route/car?dlat=${lat}&dlng=${lng}&dname=${name}&appname=ryu714.github.io`;
+      document.getElementById("naviKakao").href = `https://map.kakao.com/link/to/${name},${lat},${lng}`;
 
       // 주소 복사 버튼
       const copyBtn = document.getElementById("copyAddrBtn");
