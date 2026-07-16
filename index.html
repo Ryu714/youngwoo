@@ -201,6 +201,7 @@
     }
     .stat-cell .sn { display: block; font-size: 25px; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
     .stat-cell .sn.accent { color: var(--accent); }
+    .stat-cell .sn .unit { font-size: 14px; font-weight: 700; color: var(--text-soft); margin-left: 2px; }
     .stat-cell .sl { display: block; font-size: 11.5px; color: var(--text-soft); margin-top: 4px; }
 
     .groups { display: flex; flex-direction: column; gap: 14px; }
@@ -511,10 +512,11 @@
       const stayList = attendList.filter(isStay);       // 참석자 중 숙박
       const dayList = attendList.filter(p => !isStay(p)); // 참석자 중 당일복귀
 
-      document.getElementById("cntAttend").textContent = attendList.length;
-      document.getElementById("cntAbsent").textContent = absentList.length;
-      document.getElementById("cntStay").textContent = stayList.length;
-      document.getElementById("cntDay").textContent = dayList.length;
+      const withUnit = (n) => `${n}<span class="unit">명</span>`;
+      document.getElementById("cntAttend").innerHTML = withUnit(attendList.length);
+      document.getElementById("cntAbsent").innerHTML = withUnit(absentList.length);
+      document.getElementById("cntStay").innerHTML = withUnit(stayList.length);
+      document.getElementById("cntDay").innerHTML = withUnit(dayList.length);
 
       const chipHtml = (list, cls, icon) => `<div class="chips">` +
         list.map(p => `<span class="chip ${cls}"><span class="chip-ico">${icon}</span>${esc(p.이름)}</span>`).join("") + `</div>`;
