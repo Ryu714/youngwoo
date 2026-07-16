@@ -142,7 +142,10 @@
     }
     .sec-title::before { content: ""; width: 4px; height: 13px; border-radius: 3px; background: var(--accent); }
     .card {
-      background: var(--surface); border: 1px solid var(--border);
+      background:
+        radial-gradient(135% 90% at 100% 0%, rgba(203,160,96,.05), transparent 50%),
+        linear-gradient(168deg, #1a2735 0%, #151f2c 100%);
+      border: 1px solid var(--border);
       border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px;
     }
     .block { flex: none; }
@@ -203,7 +206,10 @@
     /* ===================== 참석 현황 (2×2 요약) ===================== */
     .stat2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .stat-cell {
-      text-align: center; background: var(--surface-2);
+      text-align: center;
+      background:
+        radial-gradient(140% 100% at 100% 0%, rgba(203,160,96,.06), transparent 55%),
+        linear-gradient(168deg, #1e2c3b 0%, #17232f 100%);
       border: 1px solid var(--border); border-radius: 12px; padding: 11px 8px;
     }
     .stat-cell .sn { display: block; font-size: 25px; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
@@ -616,7 +622,10 @@
     function activateTab(key) {
       document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", String(t.dataset.tab === key)));
       Object.entries(TAB_PANELS).forEach(([k, id]) => {
-        document.getElementById(id).classList.toggle("active", k === key);
+        const el = document.getElementById(id);
+        const on = k === key;
+        el.classList.toggle("active", on);
+        if (on) el.scrollTop = 0; // 탭 전환 시 항상 최상단부터
       });
     }
     function currentTab() {
