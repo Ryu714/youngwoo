@@ -335,7 +335,7 @@
             <div class="nav-row">
               <a class="navbtn" id="naviTmap" rel="noopener"><span class="nd" style="background:#EC1C24"></span>T맵</a>
               <a class="navbtn" id="naviNaver" rel="noopener"><span class="nd" style="background:#03C75A"></span>네이버지도</a>
-              <a class="navbtn" id="naviKakao" rel="noopener"><span class="nd" style="background:#FEE500"></span>카카오내비</a>
+              <a class="navbtn" id="naviKakao" rel="noopener"><span class="nd" style="background:#FEE500"></span>카카오맵</a>
             </div>
             <dl class="info">
               <div class="info-row"><dt>체크인</dt><dd>8/22(토) 16:00</dd></div>
@@ -393,12 +393,6 @@
       EVENT_START: "2026-08-22",
       LODGING_NAME: "Airbnb 진주",
       LODGING_ADDRESS: "경상남도 진주시 북장대로11번길 5",
-      // 내비 바로가기(T맵/네이버/카카오)용 좌표 — 위 주소 지오코딩 결과
-      LODGING_LAT: 35.19111,
-      LODGING_LNG: 128.07434,
-      // 카카오내비 앱 직접 실행용 JavaScript 키 (Kakao Developers 발급).
-      // 비워두면 카카오맵 길찾기로 대체됩니다.
-      KAKAO_JS_KEY: "3d15c269b8c05a0acf42b8f28bf3bcac",
       AIRBNB_URL: "https://www.airbnb.co.kr/rooms/1054867816529566158?check_in=2026-08-22&check_out=2026-08-23&guests=1&adults=12&s=67&unique_share_id=e334120e-8461-4621-a729-bac4d83aa94b",
     };
 
@@ -486,12 +480,11 @@
       }
       document.getElementById("airbnbBtn").href = CONFIG.AIRBNB_URL;
 
-      // 내비 바로가기 — 위 주소/좌표로 (앱 설치 시 해당 앱 실행)
-      const name = encodeURIComponent(CONFIG.LODGING_NAME);
-      const lat = CONFIG.LODGING_LAT, lng = CONFIG.LODGING_LNG;
-      document.getElementById("naviTmap").href  = `tmap://route?goalname=${name}&goalx=${lng}&goaly=${lat}`;
-      document.getElementById("naviNaver").href = `nmap://route/car?dlat=${lat}&dlng=${lng}&dname=${name}&appname=ryu714.github.io`;
-      setupKakaoNavi();
+      // 내비/지도 바로가기 — 각 앱에서 '주소'로 검색되게 (도착지가 주소로 표시됨)
+      const addr = encodeURIComponent(CONFIG.LODGING_ADDRESS);
+      document.getElementById("naviTmap").href  = `tmap://search?name=${addr}`;
+      document.getElementById("naviNaver").href = `https://map.naver.com/p/search/${addr}`;
+      document.getElementById("naviKakao").href = `https://map.kakao.com/link/search/${addr}`;
 
       // 주소 복사 버튼
       const copyBtn = document.getElementById("copyAddrBtn");
@@ -513,29 +506,6 @@
           }
         });
       }
-    }
-
-    // 카카오내비: JS 키가 있으면 SDK 로드 후 Kakao.Navi.start 로 앱 실행,
-    // 없으면 카카오맵 길찾기 링크로 폴백.
-    function setupKakaoNavi() {
-      const btn = document.getElementById("naviKakao");
-      const nm = CONFIG.LODGING_NAME, lat = CONFIG.LODGING_LAT, lng = CONFIG.LODGING_LNG;
-      const mapFallback = `https://map.kakao.com/link/to/${encodeURIComponent(nm)},${lat},${lng}`;
-      if (!CONFIG.KAKAO_JS_KEY) { btn.href = mapFallback; return; }
-
-      const s = document.createElement("script");
-      s.src = "https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js";
-      s.onload = () => {
-        try { if (!window.Kakao.isInitialized()) window.Kakao.init(CONFIG.KAKAO_JS_KEY); } catch (e) {}
-        btn.removeAttribute("href");
-        btn.addEventListener("click", (e) => {
-          e.preventDefault();
-          try { window.Kakao.Navi.start({ name: nm, x: lng, y: lat, coordType: "wgs84" }); }
-          catch (err) { window.location.href = mapFallback; }
-        });
-      };
-      s.onerror = () => { btn.href = mapFallback; };
-      document.head.appendChild(s);
     }
 
     function renderRoster(roster) {
