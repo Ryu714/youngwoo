@@ -1,0 +1,546 @@
+<!-- ============================================================
+     영우회 계모임 공유 페이지 (정적 단일 파일)
+     - 데이터: 구글 시트 웹게시 CSV (CONFIG 참조)
+     - 뷰: 이 파일 하나. 빌드 도구/프레임워크 없음
+     - CSV URL 미설정 또는 fetch 실패 시 하단 FALLBACK 데이터로 렌더링
+     - 상단 3탭(안내·참석·정산). 안내/참석은 모바일 한 화면에 맞춤, 정산만 스크롤
+     ============================================================ -->
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>영우회 계모임 · 2026.08.22~23 진주</title>
+  <meta name="description" content="영우회 계모임 — 2026.08.22(토)~08.23(일) 1박 2일, 진주. 일정·숙소·참석현황·정산 안내." />
+
+  <!-- ===== OG 태그 (카톡 링크 썸네일/제목/설명) =====
+       og:image 는 같은 폴더의 og.png(1200×630) 를 참조. 없어도 페이지 기능엔 영향 없음.
+       og:url 은 실제 GitHub Pages 주소로 바꿔주면 좋다. -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="영우회 계모임 · 진주 1박 2일" />
+  <meta property="og:description" content="2026.08.22(토)~08.23(일) · 진주 · 킴스테이. 일정·숙소·참석현황·정산 안내." />
+  <meta property="og:image" content="og.png" />
+  <meta property="og:url" content="https://example.github.io/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="영우회 계모임 · 진주 1박 2일" />
+  <meta name="twitter:description" content="2026.08.22(토)~08.23(일) · 진주 · 킴스테이." />
+  <meta name="twitter:image" content="og.png" />
+
+  <meta name="theme-color" content="#0d1620" />
+
+  <!-- 한글 폰트: Pretendard (실패 시 시스템 폰트로 폴백) -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+
+  <style>
+    /* ===================== 디자인 토큰 (차분한 다크) ===================== */
+    :root {
+      color-scheme: dark;
+      --bg: #0d1620;
+      --surface: #16212e;
+      --surface-2: #1b2836;
+      --border: #253442;
+      --border-soft: #1e2b38;
+      --text: #e9eef4;
+      --text-soft: #9cabba;
+      --text-faint: #63717f;
+      --navy: #2b4a6b;
+      --navy-soft: #1a2c40;
+      --accent: #cba060;        /* 웜 샌드 (포인트 1개, 저채도) */
+      --accent-soft: #2a2418;
+      --accent-line: #6b5a3a;
+      --ok: #6bbd8e;
+      --ok-soft: #16281f;
+      --shadow: 0 1px 1px rgba(0,0,0,.25), 0 12px 32px rgba(0,0,0,.35);
+      --radius: 16px;
+      --maxw: 620px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; }
+    body {
+      font-family: "Pretendard", "Pretendard Variable", -apple-system, BlinkMacSystemFont,
+        "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-text-size-adjust: 100%;
+      -webkit-font-smoothing: antialiased;
+      word-break: keep-all;
+    }
+    a { color: inherit; }
+
+    /* 화면 전체를 채우는 세로 플렉스 쉘: 헤더/탭/본문/푸터 */
+    .shell {
+      height: 100vh;            /* 폴백 */
+      height: 100dvh;           /* 모바일 주소창 대응 */
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      max-width: var(--maxw);
+      margin: 0 auto;
+    }
+
+    /* ===================== 히어로 (상단 타이틀) ===================== */
+    .hero {
+      flex: none;
+      position: relative;
+      padding: calc(env(safe-area-inset-top) + 26px) 22px 24px;
+      background:
+        radial-gradient(130% 120% at 82% -20%, rgba(203,160,96,.12), transparent 55%),
+        linear-gradient(168deg, #17293c 0%, #0e1b28 100%);
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .brand { display: flex; align-items: center; gap: 9px; margin-bottom: 14px; }
+    .brand .mark { width: 26px; height: 2px; background: var(--accent); border-radius: 2px; }
+    .brand .kicker { font-size: 12px; letter-spacing: .22em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+    .hero h1 { font-size: 32px; font-weight: 800; margin: 0; letter-spacing: -.025em; line-height: 1.15; }
+    .hero .lead { margin: 9px 0 0; font-size: 14.5px; color: var(--text-soft); font-weight: 500; }
+    .hero .dday {
+      position: absolute; right: 22px; top: calc(env(safe-area-inset-top) + 26px);
+      display: inline-flex; flex-direction: column; align-items: flex-end; gap: 2px;
+    }
+    .hero .dday .num { font-size: 24px; font-weight: 800; letter-spacing: -.02em; color: var(--text); }
+    .hero .dday .lbl { font-size: 11.5px; color: var(--text-soft); }
+
+    /* ===================== 탭 바 ===================== */
+    .tabbar {
+      flex: none; display: flex; padding: 0 12px;
+      background: var(--bg); border-bottom: 1px solid var(--border-soft);
+    }
+    .tab {
+      flex: 1; appearance: none; background: none; border: 0; cursor: pointer;
+      font-family: inherit; font-size: 15px; font-weight: 600;
+      color: var(--text-faint); padding: 14px 6px 12px;
+      border-bottom: 2px solid transparent; letter-spacing: .01em; transition: color .15s;
+    }
+    .tab[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); }
+    .tab .tn { display: block; font-size: 11px; font-weight: 600; color: var(--text-faint); margin-top: 2px; }
+    .tab[aria-selected="true"] .tn { color: var(--accent); }
+
+    /* ===================== 본문/패널 ===================== */
+    main { flex: 1 1 auto; min-height: 0; }
+    .panel { display: none; height: 100%; padding: 18px; }
+    .panel.active { display: flex; flex-direction: column; gap: 14px; }
+    /* 안내·참석: 상단 정렬(정산 탭과 위 여백 동일), 넘치면 스크롤 */
+    #p-info.active, #p-people.active { justify-content: flex-start; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    /* 정산: 내용이 길어 스크롤 허용 */
+    #p-settle.active { justify-content: flex-start; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+    .sec-title {
+      font-size: 12.5px; font-weight: 700; letter-spacing: .06em;
+      color: var(--text-soft); margin: 0 0 10px; padding-left: 2px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .sec-title::before { content: ""; width: 4px; height: 13px; border-radius: 3px; background: var(--accent); }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px;
+    }
+    .block { flex: none; }
+
+    /* ===================== 일정 (깔끔한 텍스트, 이모지 없음) ===================== */
+    .sched { text-align: center; padding: 26px 20px; }
+    .sched-dates { display: flex; align-items: center; justify-content: center; gap: 22px; }
+    .sd { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .sd-dow { font-size: 12.5px; color: var(--accent); font-weight: 700; letter-spacing: .05em; }
+    .sd-day { font-size: 32px; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
+    .sd-sep { width: 34px; height: 1px; background: var(--border); }
+    .sched-note { margin-top: 18px; font-size: 13.5px; color: var(--text-soft); letter-spacing: .02em; }
+
+    /* ===================== 숙소 (타이틀 위 아이콘 제거) ===================== */
+    .lodging h3 { margin: 0 0 6px; font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
+    .lodging .sub { margin: 0 0 18px; color: var(--text-soft); font-size: 14px; line-height: 1.5; }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .btn {
+      flex: 1 1 auto; min-width: 140px; text-align: center;
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 14px 16px; border-radius: 12px;
+      font-size: 15px; font-weight: 600; text-decoration: none; border: 1px solid transparent;
+    }
+    .btn-primary { background: var(--accent); color: #1a130a; }
+    .btn-primary:active { filter: brightness(.94); }
+    .btn-ghost { background: var(--surface-2); color: var(--text); border-color: var(--border); }
+
+    /* ===================== 참석 현황 ===================== */
+    .attend-hero {
+      text-align: center; padding: 20px;
+      background: linear-gradient(168deg, var(--navy-soft), var(--surface));
+    }
+    .attend-hero .big { font-size: 40px; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
+    .attend-hero .big .unit { font-size: 20px; font-weight: 700; color: var(--text-soft); margin-left: 2px; }
+    .attend-hero .cap { margin: 7px 0 0; font-size: 14px; color: var(--accent); font-weight: 600; letter-spacing: .02em; }
+
+    .split { display: flex; gap: 10px; }
+    .split .cell {
+      flex: 1; text-align: center; background: var(--surface-2);
+      border: 1px solid var(--border); border-radius: 13px; padding: 12px 8px;
+    }
+    .split .cell .n { display: block; font-size: 23px; font-weight: 800; letter-spacing: -.02em; }
+    .split .cell .t { display: block; font-size: 12px; color: var(--text-soft); margin-top: 3px; }
+    .split .cell.stay .n { color: var(--accent); }
+
+    .groups { display: flex; flex-direction: column; gap: 14px; }
+    .group-head {
+      display: flex; align-items: center; gap: 7px; margin: 0 2px 9px;
+      font-size: 13px; font-weight: 700; color: var(--text-soft);
+    }
+    .group-head .cnt { color: var(--text-faint); font-weight: 600; }
+    .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 13px; border-radius: 999px; font-size: 14.5px; font-weight: 600; line-height: 1;
+    }
+    .chip.stay { background: var(--navy); color: #eaf2fb; border: 1px solid #34557a; }
+    .chip.day { background: transparent; color: var(--text-soft); border: 1px dashed var(--border); }
+    .chip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+    .chip.day .dot { background: var(--text-faint); }
+
+    /* ===================== 정산 ===================== */
+    .total-box {
+      background: linear-gradient(168deg, var(--navy) 0%, var(--navy-soft) 100%);
+      border: 1px solid #34557a; border-radius: var(--radius); padding: 24px 22px; text-align: center;
+    }
+    .total-box .t { font-size: 13px; color: var(--text-soft); letter-spacing: .05em; margin: 0 0 8px; }
+    .total-box .amt { font-size: 40px; font-weight: 800; letter-spacing: -.025em; margin: 0; color: #fff; }
+    .subtotals { display: flex; gap: 10px; margin: 16px 0 0; }
+    .subtotals .st { flex: 1; background: rgba(0,0,0,.18); border-radius: 11px; padding: 10px 6px; }
+    .subtotals .st .k { display: block; font-size: 11.5px; color: var(--text-soft); }
+    .subtotals .st .v { display: block; font-size: 15px; font-weight: 700; margin-top: 3px; color: #eef3f9; }
+
+    .exp-list { list-style: none; margin: 0; padding: 0; }
+    .exp-item { display: flex; align-items: flex-start; gap: 12px; padding: 13px 2px; border-bottom: 1px solid var(--border-soft); }
+    .exp-item:last-child { border-bottom: 0; }
+    .exp-main { flex: 1 1 auto; min-width: 0; }
+    .exp-main .name { font-size: 15.5px; font-weight: 600; }
+    .exp-main .sub { font-size: 12.5px; color: var(--text-faint); margin-top: 3px; }
+    .exp-amt { font-size: 15.5px; font-weight: 700; white-space: nowrap; }
+    .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; vertical-align: middle; margin-right: 7px; }
+    .tag.gyebi { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-line); }
+    .tag.daenap { background: var(--navy-soft); color: #a9c6e6; border: 1px solid #34557a; }
+
+    .refund-item {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      background: var(--surface-2); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+      border-radius: 12px; padding: 13px 15px; margin-top: 8px;
+    }
+    .refund-item .who { font-weight: 700; font-size: 15.5px; }
+    .refund-item .arrow { color: var(--text-faint); margin: 0 6px; }
+    .refund-item .val { font-weight: 700; font-size: 15.5px; }
+    .status-pill { font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-line); }
+    .status-pill.done { background: var(--ok-soft); color: var(--ok); border-color: #2c4d3a; }
+
+    .placeholder { text-align: center; padding: 44px 20px; color: var(--text-faint); }
+    .placeholder p { margin: 0; font-size: 15px; }
+
+    /* ===================== 스켈레톤/푸터 ===================== */
+    .skel { border-radius: 8px; background: linear-gradient(90deg, var(--surface-2) 25%, var(--border) 37%, var(--surface-2) 63%); background-size: 400% 100%; animation: sh 1.3s ease infinite; }
+    @keyframes sh { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+    .skel-line { height: 14px; margin: 9px 0; }
+    @media (prefers-reduced-motion: reduce) { .skel { animation: none; } }
+
+    .foot {
+      flex: none; text-align: center; padding: 11px 16px calc(env(safe-area-inset-bottom) + 11px);
+      border-top: 1px solid var(--border-soft); background: var(--bg);
+    }
+    .foot p { margin: 0; font-size: 12.5px; color: var(--text-soft); font-weight: 500; letter-spacing: .01em; }
+
+    .hidden { display: none !important; }
+
+    /* 아주 낮은 화면: 여백 축소 */
+    @media (max-height: 620px) {
+      .hero { padding-top: calc(env(safe-area-inset-top) + 18px); padding-bottom: 18px; }
+      .hero h1 { font-size: 27px; }
+      .panel { padding: 14px; }
+      .sched { padding: 20px; }
+      .card { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <!-- 히어로 -->
+    <header class="hero">
+      <div class="brand"><span class="mark"></span><span class="kicker">2026</span></div>
+      <h1>영우회 계모임</h1>
+      <div class="dday">
+        <span class="num" id="ddayNum">D-…</span>
+        <span class="lbl" id="ddayLbl">모임까지</span>
+      </div>
+    </header>
+
+    <!-- 탭 바 -->
+    <nav class="tabbar" role="tablist" aria-label="섹션">
+      <button class="tab" role="tab" aria-selected="true"  aria-controls="p-info"   id="tab-info"   data-tab="info">안내<span class="tn">일정·숙소</span></button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="p-people" id="tab-people" data-tab="people">참석<span class="tn">참석현황</span></button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="p-settle" id="tab-settle" data-tab="settle">정산<span class="tn">지출·환급</span></button>
+    </nav>
+
+    <main>
+      <!-- 안내 -->
+      <section class="panel active" id="p-info" role="tabpanel" aria-labelledby="tab-info">
+        <div class="block">
+          <h2 class="sec-title">일정</h2>
+          <div class="card sched">
+            <div class="sched-dates">
+              <div class="sd"><span class="sd-dow">토요일</span><span class="sd-day">08.22</span></div>
+              <span class="sd-sep" aria-hidden="true"></span>
+              <div class="sd"><span class="sd-dow">일요일</span><span class="sd-day">08.23</span></div>
+            </div>
+            <p class="sched-note">2026년 · 1박 2일 · 진주</p>
+          </div>
+        </div>
+
+        <div class="block">
+          <h2 class="sec-title">숙소</h2>
+          <div class="card lodging">
+            <h3 id="lodgingName">진주성 도보 가능한 킴스테이</h3>
+            <p class="sub" id="lodgingAddr">예약 확인 후 정확한 정보로 업데이트 예정입니다.</p>
+            <div class="btn-row">
+              <a class="btn btn-primary" id="airbnbBtn" href="#" target="_blank" rel="noopener">Airbnb 예약 페이지</a>
+              <a class="btn btn-ghost" id="mapBtn" href="#" target="_blank" rel="noopener">네이버지도</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 참석 -->
+      <section class="panel" id="p-people" role="tabpanel" aria-labelledby="tab-people">
+        <div class="block card attend-hero">
+          <div class="big" id="attendNum"><span class="skel" style="display:inline-block;width:60px;height:40px;">&nbsp;</span></div>
+          <p class="cap" id="attendCap">전원 참석</p>
+        </div>
+        <div class="block split">
+          <div class="cell stay"><span class="n" id="stayNum">—</span><span class="t">숙박</span></div>
+          <div class="cell day"><span class="n" id="dayNum">—</span><span class="t">당일 복귀</span></div>
+        </div>
+        <div class="block">
+          <h2 class="sec-title">숙박 구분</h2>
+          <div class="groups" id="groups">
+            <div class="skel skel-line" style="width:80%;"></div>
+            <div class="skel skel-line" style="width:60%;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 정산 -->
+      <section class="panel" id="p-settle" role="tabpanel" aria-labelledby="tab-settle">
+        <div id="settleContent"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    "use strict";
+
+    /* ======================================================
+       ⚙️ 설정 — 여기만 바꾸면 됩니다
+       ====================================================== */
+    const CONFIG = {
+      // 구글 시트 → 파일 → 공유 → 웹에 게시 → 각 탭 CSV URL. (비면 아래 FALLBACK 사용)
+      ROSTER_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSkZYGWGcrolb98koVV7Zta2e_DhX1JtOj6m5yiC76nAmc6BP0tUuIkAjLLClLKA5M1QlM0c06zs0Qy/pub?gid=0&single=true&output=csv",
+      EXPENSE_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSkZYGWGcrolb98koVV7Zta2e_DhX1JtOj6m5yiC76nAmc6BP0tUuIkAjLLClLKA5M1QlM0c06zs0Qy/pub?gid=1885446330&single=true&output=csv",
+
+      // 모임 전 false → 정산 탭에 '모임 후 공개' 안내. 모임 후 true → 정산 내용 노출.
+      SHOW_SETTLEMENT: true,
+
+      EVENT_START: "2026-08-22",
+      LODGING_NAME: "진주성 도보 가능한 킴스테이",
+      // ▼ 예약 확정 후 '정확한 주소'를 여기에 넣으면 네이버지도가 정확히 핀을 찍습니다.
+      LODGING_ADDRESS: "",
+      // ▼ 주소를 모를 때 지도 검색에 쓸 대략 위치 (Airbnb 공개 좌표 기준: 진주시 상대동 부근)
+      LODGING_MAP_QUERY: "경상남도 진주시 상대동",
+      AIRBNB_URL: "https://www.airbnb.co.kr/rooms/1054867816529566158?check_in=2026-08-22&check_out=2026-08-23&guests=1&adults=12&s=67&unique_share_id=e334120e-8461-4621-a729-bac4d83aa94b",
+    };
+
+    /* ======================================================
+       FALLBACK 데이터 (fetch 실패 / URL 미설정 시)
+       ====================================================== */
+    const FALLBACK_ROSTER = [
+      { 이름: "강명훈", 숙박여부: "X" }, { 이름: "강병훈", 숙박여부: "O" },
+      { 이름: "김병화", 숙박여부: "O" }, { 이름: "김외국", 숙박여부: "X" },
+      { 이름: "류정훈", 숙박여부: "O" }, { 이름: "성윤택", 숙박여부: "O" },
+      { 이름: "양동민", 숙박여부: "O" }, { 이름: "이영태", 숙박여부: "O" },
+      { 이름: "이종길", 숙박여부: "O" }, { 이름: "정연섭", 숙박여부: "O" },
+      { 이름: "정연재", 숙박여부: "O" }, { 이름: "정의신", 숙박여부: "O" },
+      { 이름: "조격래", 숙박여부: "O" }, { 이름: "조철환", 숙박여부: "O" },
+      { 이름: "최정용", 숙박여부: "O" }, { 이름: "황진철", 숙박여부: "O" },
+    ];
+    const FALLBACK_EXPENSE = [
+      { 일자: "2026-08-22", 구분: "대납", 항목: "숙소비용 (킴스테이 1박)", 금액: "516000", 결제자: "정연재", 비고: "Airbnb 선결제", 상태: "" },
+    ];
+
+    /* ======================================================
+       유틸
+       ====================================================== */
+    function parseCSV(text) {
+      const rows = []; let row = [], field = "", inQuotes = false;
+      if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        if (inQuotes) {
+          if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else inQuotes = false; }
+          else field += c;
+        } else {
+          if (c === '"') inQuotes = true;
+          else if (c === ",") { row.push(field); field = ""; }
+          else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
+          else if (c === "\r") { /* skip */ }
+          else field += c;
+        }
+      }
+      if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row); }
+      const clean = rows.filter(r => r.some(v => v.trim() !== ""));
+      if (!clean.length) return [];
+      const headers = clean[0].map(h => h.trim());
+      return clean.slice(1).map(r => {
+        const o = {}; headers.forEach((h, idx) => { o[h] = (r[idx] ?? "").trim(); }); return o;
+      });
+    }
+    async function fetchCSV(url) {
+      if (!url) return null;
+      try {
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const parsed = parseCSV(await res.text());
+        return parsed.length ? parsed : null;
+      } catch (e) { console.warn("CSV fetch 실패, fallback 사용:", url, e); return null; }
+    }
+    function won(n) { return (Number(String(n).replace(/[^0-9.-]/g, "")) || 0).toLocaleString("ko-KR") + "원"; }
+    function numOf(n) { return Number(String(n).replace(/[^0-9.-]/g, "")) || 0; }
+    function isStay(p) { return String(p.숙박여부).toUpperCase().trim() === "O"; }
+    function esc(s) { return String(s ?? "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])); }
+
+    /* ======================================================
+       렌더링
+       ====================================================== */
+    function renderDday() {
+      const KST = 9 * 60;
+      const toKstMidnight = (d) => {
+        const utc = d.getTime() + d.getTimezoneOffset() * 60000;
+        const kst = new Date(utc + KST * 60000);
+        return Date.UTC(kst.getFullYear(), kst.getMonth(), kst.getDate());
+      };
+      const todayKst = toKstMidnight(new Date());
+      const [y, m, dd] = CONFIG.EVENT_START.split("-").map(Number);
+      const diffDays = Math.round((Date.UTC(y, m - 1, dd) - todayKst) / 86400000);
+      const numEl = document.getElementById("ddayNum"), lblEl = document.getElementById("ddayLbl");
+      if (diffDays > 0) { numEl.textContent = "D-" + diffDays; lblEl.textContent = "모임까지"; }
+      else if (diffDays === 0) { numEl.textContent = "D-DAY"; lblEl.textContent = "오늘이에요!"; }
+      else { numEl.textContent = "D+" + Math.abs(diffDays); lblEl.textContent = "모임 후"; }
+    }
+
+    function renderLodging() {
+      document.getElementById("lodgingName").textContent = CONFIG.LODGING_NAME;
+      document.getElementById("airbnbBtn").href = CONFIG.AIRBNB_URL;
+      // 주소 > 대략위치 > 숙소명 순으로 네이버지도 검색
+      const query = CONFIG.LODGING_ADDRESS || CONFIG.LODGING_MAP_QUERY || CONFIG.LODGING_NAME;
+      document.getElementById("mapBtn").href = "https://map.naver.com/p/search/" + encodeURIComponent(query);
+      if (CONFIG.LODGING_ADDRESS) {
+        document.getElementById("lodgingAddr").textContent = CONFIG.LODGING_ADDRESS;
+      }
+    }
+
+    function renderRoster(roster) {
+      const total = roster.length;
+      const stayList = roster.filter(isStay);
+      const dayList = roster.filter(p => !isStay(p));
+
+      document.getElementById("attendNum").innerHTML = total + '<span class="unit">명</span>';
+      document.getElementById("attendCap").textContent = "전원 참석";
+      document.getElementById("stayNum").textContent = stayList.length;
+      document.getElementById("dayNum").textContent = dayList.length;
+
+      const chipHtml = (list, cls) => `<div class="chips">` +
+        list.map(p => `<span class="chip ${cls}"><span class="dot"></span>${esc(p.이름)}</span>`).join("") + `</div>`;
+      const groupHtml = (label, list, cls) => `<div class="group">
+        <div class="group-head">${label} <span class="cnt">· ${list.length}명</span></div>
+        ${list.length ? chipHtml(list, cls) : '<p style="color:var(--text-faint);font-size:14px;margin:0 2px;">없음</p>'}
+      </div>`;
+
+      document.getElementById("groups").innerHTML =
+        groupHtml("숙박", stayList, "stay") + groupHtml("당일 복귀", dayList, "day");
+    }
+
+    function renderSettlement(expense) {
+      const box = document.getElementById("settleContent");
+      if (!CONFIG.SHOW_SETTLEMENT) {
+        box.innerHTML = `<div class="card placeholder"><p>정산 내역은 모임 종료 후 공개됩니다.</p></div>`;
+        return;
+      }
+      const gyebiSum = expense.filter(e => e.구분 === "계비").reduce((s, e) => s + numOf(e.금액), 0);
+      const daenapSum = expense.filter(e => e.구분 === "대납").reduce((s, e) => s + numOf(e.금액), 0);
+      const total = gyebiSum + daenapSum;
+
+      const expItems = expense.length ? expense.map(e => {
+        const tag = e.구분 === "계비" ? `<span class="tag gyebi">계비</span>` : `<span class="tag daenap">대납</span>`;
+        const sub = [e.일자, e.결제자 ? "결제 " + esc(e.결제자) : "", e.비고 ? esc(e.비고) : ""].filter(Boolean).join(" · ");
+        return `<li class="exp-item"><div class="exp-main"><div class="name">${tag}${esc(e.항목)}</div><div class="sub">${sub}</div></div><div class="exp-amt">${won(e.금액)}</div></li>`;
+      }).join("") : `<li class="exp-item"><div class="exp-main"><div class="sub">등록된 지출이 없습니다.</div></div></li>`;
+
+      const refundMap = new Map();
+      expense.filter(e => e.구분 === "대납").forEach(e => {
+        const who = e.결제자 || "미상";
+        const cur = refundMap.get(who) || { amount: 0, allDone: true };
+        cur.amount += numOf(e.금액);
+        cur.allDone = cur.allDone && (String(e.상태 || "").trim() === "완료");
+        refundMap.set(who, cur);
+      });
+      const refundHtml = refundMap.size ? Array.from(refundMap.entries()).map(([who, v]) => {
+        const pill = v.allDone ? `<span class="status-pill done">환급 완료</span>` : `<span class="status-pill">환급 대기</span>`;
+        return `<div class="refund-item"><div><span class="who">${esc(who)}</span><span class="arrow">→</span><span class="val">${won(v.amount)}</span></div>${pill}</div>`;
+      }).join("") : "";
+
+      box.innerHTML = `
+        <div class="total-box">
+          <p class="t">계비 총 지출</p>
+          <p class="amt">${won(total)}</p>
+          <div class="subtotals">
+            <div class="st"><span class="k">계비 직접결제</span><span class="v">${won(gyebiSum)}</span></div>
+            <div class="st"><span class="k">개인 대납</span><span class="v">${won(daenapSum)}</span></div>
+          </div>
+        </div>
+        <h2 class="sec-title" style="margin-top:16px;">지출 내역</h2>
+        <div class="card"><ul class="exp-list">${expItems}</ul></div>
+        ${refundHtml ? `<h2 class="sec-title" style="margin-top:18px;">대납 환급 대상</h2>${refundHtml}
+          <p style="font-size:12.5px;color:var(--text-faint);margin:10px 2px 0;">계비 통장 → 개인에게 환급될 금액이에요.</p>` : ""}`;
+    }
+
+    /* ======================================================
+       탭 전환
+       ====================================================== */
+    function setupTabs() {
+      const tabs = Array.from(document.querySelectorAll(".tab"));
+      const panels = { info: "p-info", people: "p-people", settle: "p-settle" };
+      tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+          tabs.forEach(t => t.setAttribute("aria-selected", String(t === tab)));
+          Object.entries(panels).forEach(([key, id]) => {
+            document.getElementById(id).classList.toggle("active", key === tab.dataset.tab);
+          });
+        });
+      });
+    }
+
+    /* ======================================================
+       부트스트랩
+       ====================================================== */
+    (async function init() {
+      renderDday();
+      renderLodging();
+      setupTabs();
+
+      const [rosterCsv, expenseCsv] = await Promise.all([
+        fetchCSV(CONFIG.ROSTER_CSV_URL),
+        CONFIG.SHOW_SETTLEMENT ? fetchCSV(CONFIG.EXPENSE_CSV_URL) : Promise.resolve(null),
+      ]);
+      const roster = (rosterCsv && rosterCsv.length) ? rosterCsv : FALLBACK_ROSTER;
+      const expense = (expenseCsv && expenseCsv.length) ? expenseCsv : FALLBACK_EXPENSE;
+
+      renderRoster(roster);
+      renderSettlement(expense);
+    })();
+  </script>
+</body>
+</html>
