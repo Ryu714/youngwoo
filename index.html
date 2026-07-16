@@ -119,6 +119,13 @@
     .tab .tn { display: block; font-size: 11px; font-weight: 600; color: var(--text-faint); margin-top: 2px; }
     .tab[aria-selected="true"] .tn { color: var(--accent); }
 
+    /* 데이터 로딩 실패 시 안내 배너 */
+    .fallback-note {
+      flex: none; text-align: center; font-size: 12px; font-weight: 600; line-height: 1.4;
+      color: var(--accent); background: var(--accent-soft);
+      border-bottom: 1px solid var(--accent-line); padding: 8px 14px;
+    }
+
     /* ===================== 본문/패널 ===================== */
     main { flex: 1 1 auto; min-height: 0; }
     .panel { display: none; height: 100%; padding: 18px; }
@@ -219,6 +226,7 @@
     }
     .chip.stay { background: var(--navy); color: #eaf2fb; border: 1px solid #34557a; }
     .chip.day { background: transparent; color: var(--text-soft); border: 1px dashed var(--border); }
+    .chip.absent { background: var(--surface-2); color: var(--text-faint); border: 1px solid var(--border); }
     .chip-ico { font-size: clamp(11px, 3vw, 14px); line-height: 1; flex: none; }
 
     /* ===================== 정산 ===================== */
@@ -301,6 +309,8 @@
       <button class="tab" role="tab" aria-selected="false" aria-controls="p-settle" id="tab-settle" data-tab="settle">정산<span class="tn">지출·환급</span></button>
     </nav>
 
+    <div class="fallback-note hidden" id="fallbackNote">⚠️ 최신 정보를 불러오지 못해 기본값을 표시 중입니다 · 잠시 후 새로고침해 주세요</div>
+
     <main>
       <!-- 안내 -->
       <section class="panel active" id="p-info" role="tabpanel" aria-labelledby="tab-info">
@@ -357,7 +367,6 @@
           </div>
         </div>
         <div class="block">
-          <h2 class="sec-title">숙박 구분</h2>
           <div class="groups" id="groups">
             <div class="skel skel-line" style="width:80%;"></div>
             <div class="skel skel-line" style="width:60%;"></div>
@@ -480,9 +489,28 @@
 
       // 내비/지도 바로가기 — 각 앱에서 '주소'로 검색되게 (도착지가 주소로 표시됨)
       const addr = encodeURIComponent(CONFIG.LODGING_ADDRESS);
-      document.getElementById("naviTmap").href  = `tmap://search?name=${addr}`;
       document.getElementById("naviNaver").href = `https://map.naver.com/p/search/${addr}`;
       document.getElementById("naviKakao").href = `https://map.kakao.com/link/search/${addr}`;
+
+      // T맵은 앱 스킴(tmap://). 앱이 없으면 반응이 없으므로, 열리지 않으면 스토어로 이동.
+      const tmapUrl = `tmap://search?name=${addr}`;
+      const tmapBtn = document.getElementById("naviTmap");
+      tmapBtn.href = tmapUrl;
+      tmapBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const ua = navigator.userAgent || "";
+        const store = /iP(hone|ad|od)/i.test(ua)
+          ? "https://apps.apple.com/kr/app/id431589174"
+          : "https://play.google.com/store/apps/details?id=com.skt.tmap.ku";
+        const timer = setTimeout(() => { window.location.href = store; }, 1500);
+        const cancel = () => clearTimeout(timer);
+        window.addEventListener("pagehide", cancel, { once: true });
+        window.addEventListener("blur", cancel, { once: true });
+        document.addEventListener("visibilitychange", function vc() {
+          if (document.hidden) { cancel(); document.removeEventListener("visibilitychange", vc); }
+        });
+        window.location.href = tmapUrl;
+      });
 
       // 주소 복사 버튼
       const copyBtn = document.getElementById("copyAddrBtn");
@@ -519,14 +547,20 @@
       document.getElementById("cntDay").innerHTML = withUnit(dayList.length);
 
       const chipHtml = (list, cls, icon) => `<div class="chips">` +
-        list.map(p => `<span class="chip ${cls}"><span class="chip-ico">${icon}</span>${esc(p.이름)}</span>`).join("") + `</div>`;
+        list.map(p => `<span class="chip ${cls}">${icon ? `<span class="chip-ico">${icon}</span>` : ""}${esc(p.이름)}</span>`).join("") + `</div>`;
+      // 숙박/당일: 인원 있을 때만 칩, 없으면 '없음'
       const groupHtml = (label, list, cls, icon) => `<div class="group">
         <div class="group-head">${label} <span class="cnt">· ${list.length}명</span></div>
         ${list.length ? chipHtml(list, cls, icon) : '<p style="color:var(--text-faint);font-size:14px;margin:0 2px;">없음</p>'}
       </div>`;
+      // 불참: 항상 제목 표시, 인원 없으면 제목만
+      const absentHtml = (list) => `<div class="group">
+        <div class="group-head">불참 <span class="cnt">· ${list.length}명</span></div>
+        ${list.length ? chipHtml(list, "absent", "") : ""}
+      </div>`;
 
       document.getElementById("groups").innerHTML =
-        groupHtml("숙박", stayList, "stay", "😊") + groupHtml("당일 복귀", dayList, "day", "😭");
+        groupHtml("숙박", stayList, "stay", "😊") + groupHtml("당일 복귀", dayList, "day", "😭") + absentHtml(absentList);
     }
 
     function renderSettlement(expense) {
@@ -630,6 +664,11 @@
       ]);
       const roster = (rosterCsv && rosterCsv.length) ? rosterCsv : FALLBACK_ROSTER;
       const expense = (expenseCsv && expenseCsv.length) ? expenseCsv : FALLBACK_EXPENSE;
+
+      // 시트 URL이 설정돼 있는데 불러오기 실패 → 폴백 배너 표시
+      const rosterFailed = !!CONFIG.ROSTER_CSV_URL && !rosterCsv;
+      const expenseFailed = CONFIG.SHOW_SETTLEMENT && !!CONFIG.EXPENSE_CSV_URL && !expenseCsv;
+      if (rosterFailed || expenseFailed) document.getElementById("fallbackNote").classList.remove("hidden");
 
       renderRoster(roster);
       renderSettlement(expense);
