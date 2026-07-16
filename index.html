@@ -224,8 +224,7 @@
     }
     .chip.stay { background: var(--navy); color: #eaf2fb; border: 1px solid #34557a; }
     .chip.day { background: transparent; color: var(--text-soft); border: 1px dashed var(--border); }
-    .chip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
-    .chip.day .dot { background: var(--text-faint); }
+    .chip-ico { font-size: 14px; line-height: 1; }
 
     /* ===================== 정산 ===================== */
     .total-box {
@@ -520,15 +519,15 @@
       document.getElementById("stayNum").textContent = stayList.length;
       document.getElementById("dayNum").textContent = dayList.length;
 
-      const chipHtml = (list, cls) => `<div class="chips">` +
-        list.map(p => `<span class="chip ${cls}"><span class="dot"></span>${esc(p.이름)}</span>`).join("") + `</div>`;
-      const groupHtml = (label, list, cls) => `<div class="group">
+      const chipHtml = (list, cls, icon) => `<div class="chips">` +
+        list.map(p => `<span class="chip ${cls}"><span class="chip-ico">${icon}</span>${esc(p.이름)}</span>`).join("") + `</div>`;
+      const groupHtml = (label, list, cls, icon) => `<div class="group">
         <div class="group-head">${label} <span class="cnt">· ${list.length}명</span></div>
-        ${list.length ? chipHtml(list, cls) : '<p style="color:var(--text-faint);font-size:14px;margin:0 2px;">없음</p>'}
+        ${list.length ? chipHtml(list, cls, icon) : '<p style="color:var(--text-faint);font-size:14px;margin:0 2px;">없음</p>'}
       </div>`;
 
       document.getElementById("groups").innerHTML =
-        groupHtml("숙박", stayList, "stay") + groupHtml("당일 복귀", dayList, "day");
+        groupHtml("숙박", stayList, "stay", "😊") + groupHtml("당일 복귀", dayList, "day", "😢");
     }
 
     function renderSettlement(expense) {
