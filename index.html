@@ -668,12 +668,16 @@
     /* ======================================================
        부트스트랩
        ====================================================== */
-    // 히어로 상단 선을 '영우회 계모임' 타이틀 폭에 맞춰 늘림
+    // 히어로 상단 선을 '영우회 계모임' 타이틀의 '실제 글자 폭'에 맞춰 늘림
+    // (h1은 블록이라 박스 폭=전체 폭 → Range로 텍스트 폭만 측정)
     function syncHeroLine() {
       const brand = document.getElementById("heroBrand");
       const title = document.getElementById("heroTitle");
       if (!brand || !title) return;
-      brand.style.width = Math.round(title.getBoundingClientRect().width) + "px";
+      const range = document.createRange();
+      range.selectNodeContents(title);
+      const w = range.getBoundingClientRect().width;
+      if (w) brand.style.width = Math.round(w) + "px";
     }
 
     (async function init() {
