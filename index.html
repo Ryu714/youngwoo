@@ -141,7 +141,7 @@
     .block { flex: none; }
 
     /* ===================== 일정 (깔끔한 텍스트, 이모지 없음) ===================== */
-    .sched { text-align: center; padding: 26px 20px 18px; }
+    .sched { text-align: center; padding: 26px 20px 12px; }
     .sched-dates { display: flex; align-items: center; justify-content: center; gap: 22px; }
     .sd { display: flex; flex-direction: column; align-items: center; gap: 6px; }
     .sd-dow { font-size: 12.5px; color: var(--accent); font-weight: 700; letter-spacing: .05em; }
@@ -529,7 +529,7 @@
       </div>`;
 
       document.getElementById("groups").innerHTML =
-        groupHtml("숙박", stayList, "stay", "😊") + groupHtml("당일 복귀", dayList, "day", "😢");
+        groupHtml("숙박", stayList, "stay", "😊") + groupHtml("당일 복귀", dayList, "day", "😭");
     }
 
     function renderSettlement(expense) {
