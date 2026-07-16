@@ -163,6 +163,9 @@
 
     /* ===================== 숙소 (타이틀 위 아이콘 제거) ===================== */
     .lodging h3 { margin: 0 0 6px; font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
+    /* 제목 + 주의문구: 한 줄에 들어가면 나란히, 길면 제목 아래로 줄바꿈 */
+    .lodging-title { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; row-gap: 6px; margin-bottom: 14px; }
+    .lodging-title h3 { margin: 0; }
     .lodging .sub { margin: 0; color: var(--text-soft); font-size: 14px; line-height: 1.5; }
     .addr-row { display: flex; align-items: center; gap: 8px; }
     .addr-row .sub { flex: 1; min-width: 0; }
@@ -177,7 +180,7 @@
     .copy-btn.copied { border-color: var(--ok); color: var(--ok); }
     .copy-btn.copied .ico-copy { display: none; }
     .copy-btn.copied .ico-check { display: inline; }
-    .addr-warn { margin: 10px 0 0; font-size: 13px; line-height: 1.5; color: var(--accent); }
+    .addr-warn { margin: 0; flex: 1 1 230px; min-width: 200px; font-size: 12.5px; line-height: 1.45; color: var(--accent); }
     .addr-warn b { font-weight: 700; }
     .nav-row { display: flex; gap: 8px; margin-top: 12px; }
     .navbtn {
@@ -352,7 +355,10 @@
         <div class="block" style="margin-top:16px;">
           <h2 class="sec-title">숙소</h2>
           <div class="card lodging">
-            <h3 id="lodgingName">Airbnb 진주</h3>
+            <div class="lodging-title">
+              <h3 id="lodgingName">Airbnb 진주</h3>
+              <p class="addr-warn">⚠️ 숙소명 아님 · <b>주소로 내비검색</b> 또는 아래 바로가기 버튼 이용</p>
+            </div>
             <div class="addr-row">
               <p class="sub" id="lodgingAddr">경상남도 진주시 북장대로11번길 5</p>
               <button class="copy-btn" id="copyAddrBtn" type="button" aria-label="주소 복사" title="주소 복사">
@@ -360,7 +366,6 @@
                 <svg class="ico-check" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
               </button>
             </div>
-            <p class="addr-warn">⚠️ 숙소명 내비 검색 불가 · <b>주소로 검색</b>할 것</p>
             <div class="nav-row">
               <a class="navbtn" id="naviTmap" rel="noopener"><span class="navbtn-name"><span class="nd" style="background:#1B6FE3"></span>T맵</span><span class="navbtn-sub">바로가기</span></a>
               <a class="navbtn" id="naviNaver" rel="noopener"><span class="navbtn-name"><span class="nd" style="background:#03C75A"></span>네이버지도</span><span class="navbtn-sub">바로가기</span></a>
