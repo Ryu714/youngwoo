@@ -496,13 +496,19 @@
       document.getElementById("naviNaver").href = `https://map.naver.com/p/search/${addr}`;
       document.getElementById("naviKakao").href = `https://map.kakao.com/link/search/${addr}`;
 
-      // T맵은 앱 스킴(tmap://). 앱이 없으면 반응이 없으므로, 열리지 않으면 스토어로 이동.
+      // T맵은 모바일 앱 전용(웹 지도 없음). 모바일=앱 스킴, 미설치 시 스토어. PC=티맵 안내 사이트.
       const tmapUrl = `tmap://search?name=${addr}`;
       const tmapBtn = document.getElementById("naviTmap");
       tmapBtn.href = tmapUrl;
       tmapBtn.addEventListener("click", (e) => {
         e.preventDefault();
         const ua = navigator.userAgent || "";
+        const isMobile = /Android|iP(hone|ad|od)/i.test(ua);
+        if (!isMobile) {
+          // PC: 스킴 시도 시 '주소 유효하지 않음' 에러가 나므로, 티맵 사이트로 안내
+          window.open("https://www.tmap.co.kr/", "_blank", "noopener");
+          return;
+        }
         const store = /iP(hone|ad|od)/i.test(ua)
           ? "https://apps.apple.com/kr/app/id431589174"
           : "https://play.google.com/store/apps/details?id=com.skt.tmap.ku";
