@@ -169,11 +169,13 @@
     .addr-warn b { font-weight: 700; }
     .nav-row { display: flex; gap: 8px; margin-top: 12px; }
     .navbtn {
-      flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-      padding: 11px 6px; border-radius: 10px; font-size: 13.5px; font-weight: 600;
+      flex: 1; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+      padding: 10px 6px; border-radius: 10px;
       text-decoration: none; background: var(--surface-2); color: var(--text); border: 1px solid var(--border);
     }
     .navbtn:active { filter: brightness(1.2); }
+    .navbtn-name { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; }
+    .navbtn-sub { font-size: 11px; color: var(--text-faint); font-weight: 500; }
     .navbtn .nd { width: 8px; height: 8px; border-radius: 50%; flex: none; }
     .info { margin: 16px 0 18px; padding-top: 16px; border-top: 1px solid var(--border-soft); display: flex; flex-direction: column; gap: 12px; }
     .info-row { display: flex; gap: 12px; align-items: baseline; }
@@ -333,9 +335,9 @@
             </div>
             <p class="addr-warn">⚠️ 숙소명 내비 검색 불가. <b>주소로 검색</b>할 것.</p>
             <div class="nav-row">
-              <a class="navbtn" id="naviTmap" rel="noopener"><span class="nd" style="background:#EC1C24"></span>T맵</a>
-              <a class="navbtn" id="naviNaver" rel="noopener"><span class="nd" style="background:#03C75A"></span>네이버지도</a>
-              <a class="navbtn" id="naviKakao" rel="noopener"><span class="nd" style="background:#FEE500"></span>카카오맵</a>
+              <a class="navbtn" id="naviTmap" rel="noopener"><span class="navbtn-name"><span class="nd" style="background:#EC1C24"></span>T맵</span><span class="navbtn-sub">바로가기</span></a>
+              <a class="navbtn" id="naviNaver" rel="noopener"><span class="navbtn-name"><span class="nd" style="background:#03C75A"></span>네이버지도</span><span class="navbtn-sub">바로가기</span></a>
+              <a class="navbtn" id="naviKakao" rel="noopener"><span class="navbtn-name"><span class="nd" style="background:#FEE500"></span>카카오맵</span><span class="navbtn-sub">바로가기</span></a>
             </div>
             <dl class="info">
               <div class="info-row"><dt>체크인</dt><dd>8/22(토) 16:00</dd></div>
@@ -344,7 +346,7 @@
               <div class="info-row"><dt>주차</dt><dd>주차장이 협소합니다. 자리가 없을 경우 북장대로변 주차구역을 이용해 주세요.</dd></div>
             </dl>
             <div class="btn-row">
-              <a class="btn btn-primary" id="airbnbBtn" target="_blank" rel="noopener">Airbnb 숙소정보</a>
+              <a class="btn btn-ghost" id="airbnbBtn" target="_blank" rel="noopener">Airbnb 숙소정보</a>
             </div>
           </div>
         </div>
