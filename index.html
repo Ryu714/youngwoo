@@ -151,7 +151,11 @@
 
     /* ===================== 숙소 (타이틀 위 아이콘 제거) ===================== */
     .lodging h3 { margin: 0 0 6px; font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
-    .lodging .sub { margin: 0 0 18px; color: var(--text-soft); font-size: 14px; line-height: 1.5; }
+    .lodging .sub { margin: 0; color: var(--text-soft); font-size: 14px; line-height: 1.5; }
+    .info { margin: 16px 0 18px; padding-top: 16px; border-top: 1px solid var(--border-soft); display: flex; flex-direction: column; gap: 12px; }
+    .info-row { display: flex; gap: 12px; align-items: baseline; }
+    .info-row dt { flex: none; width: 58px; font-size: 13px; color: var(--text-faint); font-weight: 600; }
+    .info-row dd { margin: 0; flex: 1; min-width: 0; font-size: 14.5px; color: var(--text); line-height: 1.5; }
     .btn-row { display: flex; flex-wrap: wrap; gap: 10px; }
     .btn {
       flex: 1 1 auto; min-width: 140px; text-align: center;
@@ -296,10 +300,16 @@
         <div class="block" style="margin-top:16px;">
           <h2 class="sec-title">숙소</h2>
           <div class="card lodging">
-            <h3 id="lodgingName">진주성 도보 가능한 킴스테이</h3>
-            <p class="sub" id="lodgingAddr">예약 확인 후 정확한 정보로 업데이트 예정입니다.</p>
+            <h3 id="lodgingName">Airbnb 진주</h3>
+            <p class="sub" id="lodgingAddr">경상남도 진주시 북장대로11번길 5</p>
+            <dl class="info">
+              <div class="info-row"><dt>체크인</dt><dd>8/22(토) 16:00</dd></div>
+              <div class="info-row"><dt>체크아웃</dt><dd>8/23(일) 11:00</dd></div>
+              <div class="info-row"><dt>비밀번호</dt><dd>체크인 당일 안내 예정</dd></div>
+              <div class="info-row"><dt>주차</dt><dd>주차장이 협소합니다. 자리가 없을 경우 북장대로변 주차구역을 이용해 주세요.</dd></div>
+            </dl>
             <div class="btn-row">
-              <a class="btn btn-primary is-disabled" id="airbnbBtn" aria-disabled="true" tabindex="-1" target="_blank" rel="noopener">Airbnb 예약 페이지</a>
+              <a class="btn btn-primary is-disabled" id="airbnbBtn" aria-disabled="true" tabindex="-1" target="_blank" rel="noopener">Airbnb</a>
               <a class="btn btn-ghost is-disabled" id="mapBtn" aria-disabled="true" tabindex="-1" target="_blank" rel="noopener">네이버지도</a>
             </div>
           </div>
@@ -348,10 +358,10 @@
 
       EVENT_START: "2026-08-22",
       // 숙소 예약 확정 후 true 로 바꾸면 아래 버튼(Airbnb·네이버지도)이 활성화됩니다.
-      LODGING_LINKS_ENABLED: false,
-      LODGING_NAME: "진주성 도보 가능한 킴스테이",
-      // ▼ 예약 확정 후 '정확한 주소'를 여기에 넣으면 네이버지도가 정확히 핀을 찍습니다.
-      LODGING_ADDRESS: "",
+      LODGING_LINKS_ENABLED: true,
+      LODGING_NAME: "Airbnb 진주",
+      // ▼ '정확한 주소' — 네이버지도가 이 주소로 핀을 찍습니다.
+      LODGING_ADDRESS: "경상남도 진주시 북장대로11번길 5",
       // ▼ 주소를 모를 때 지도 검색에 쓸 대략 위치 (Airbnb 공개 좌표 기준: 진주시 상대동 부근)
       LODGING_MAP_QUERY: "경상남도 진주시 상대동",
       AIRBNB_URL: "https://www.airbnb.co.kr/rooms/1054867816529566158?check_in=2026-08-22&check_out=2026-08-23&guests=1&adults=12&s=67&unique_share_id=e334120e-8461-4621-a729-bac4d83aa94b",
