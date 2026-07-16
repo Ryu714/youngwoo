@@ -12,6 +12,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>영우회 계모임 · 2026.08.22~23 진주</title>
   <meta name="description" content="영우회 계모임 — 2026.08.22(토)~08.23(일) 1박 2일, 진주. 일정·숙소·참석현황·정산 안내." />
+  <!-- 검색엔진 노출 차단 (링크로는 열리되 구글 등에 색인 안 됨) -->
+  <meta name="robots" content="noindex, nofollow" />
 
   <!-- ===== OG 태그 (카톡 링크 썸네일/제목/설명) =====
        og:image 는 같은 폴더의 og.png(1200×630) 를 참조. 없어도 페이지 기능엔 영향 없음.
@@ -92,8 +94,8 @@
         linear-gradient(168deg, #17293c 0%, #0e1b28 100%);
       border-bottom: 1px solid var(--border-soft);
     }
-    .brand { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
-    .brand .mark { width: 26px; height: 2px; background: var(--accent); border-radius: 2px; }
+    .brand { display: flex; align-items: center; gap: 11px; margin-bottom: 8px; }
+    .brand .mark { flex: 1 1 auto; min-width: 20px; height: 2px; background: var(--accent); border-radius: 2px; opacity: .85; }
     .brand .kicker { font-size: 12px; letter-spacing: .22em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
     .hero h1 { font-size: 32px; font-weight: 800; margin: 0; letter-spacing: -.025em; line-height: 1.15; }
     .hero .lead { margin: 9px 0 0; font-size: 14.5px; color: var(--text-soft); font-weight: 500; }
@@ -300,8 +302,8 @@
   <div class="shell">
     <!-- 히어로 -->
     <header class="hero">
-      <div class="brand"><span class="mark"></span><span class="kicker">2026</span></div>
-      <h1>영우회 계모임</h1>
+      <div class="brand" id="heroBrand"><span class="kicker">2026</span><span class="mark"></span></div>
+      <h1 id="heroTitle">영우회 계모임</h1>
       <div class="dday">
         <span class="num" id="ddayNum">D-…</span>
         <span class="lbl" id="ddayLbl">모임까지</span>
@@ -666,10 +668,21 @@
     /* ======================================================
        부트스트랩
        ====================================================== */
+    // 히어로 상단 선을 '영우회 계모임' 타이틀 폭에 맞춰 늘림
+    function syncHeroLine() {
+      const brand = document.getElementById("heroBrand");
+      const title = document.getElementById("heroTitle");
+      if (!brand || !title) return;
+      brand.style.width = Math.round(title.getBoundingClientRect().width) + "px";
+    }
+
     (async function init() {
       renderDday();
       renderLodging();
       setupTabs();
+      syncHeroLine();
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncHeroLine);
+      window.addEventListener("resize", syncHeroLine);
 
       const [rosterCsv, expenseCsv] = await Promise.all([
         fetchCSV(CONFIG.ROSTER_CSV_URL),
