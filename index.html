@@ -206,11 +206,11 @@
     .meal-row { display: flex; gap: 12px; align-items: baseline; margin-top: 7px; }
     /* 같은 날짜 안, 식사 사이 얇은 구분선 (점심↔저녁 등) */
     .meal-row + .meal-row { margin-top: 11px; padding-top: 11px; border-top: 1px solid var(--border-soft); }
-    .meal-slot { flex: none; width: 56px; font-size: 13px; color: var(--text-faint); font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+    .meal-slot { flex: none; width: 46px; font-size: 13px; color: var(--text-faint); font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
     .meal-val { margin: 0; flex: 1; min-width: 0; font-size: 15.5px; font-weight: 600; line-height: 1.4; }
     .meal-val.muted { color: var(--text-faint); font-weight: 500; }
     .meal-note { color: var(--text-soft); font-weight: 500; }
-    .meal-icos { display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
+    .meal-icos { display: flex; flex-direction: column; align-items: center; gap: 6px; }
     .meal-icos svg { width: 24px; height: 24px; color: var(--accent); display: block; }
     .meal-name-line { font-size: 15.5px; font-weight: 600; }
     .meal-detail { margin-top: 8px; }
