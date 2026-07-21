@@ -210,6 +210,8 @@
     .meal-val { margin: 0; flex: 1; min-width: 0; font-size: 15.5px; font-weight: 600; line-height: 1.4; }
     .meal-val.muted { color: var(--text-faint); font-weight: 500; }
     .meal-note { color: var(--text-soft); font-weight: 500; }
+    .meal-icos { display: inline-flex; align-items: center; gap: 5px; margin-left: 7px; vertical-align: middle; position: relative; top: -1px; }
+    .meal-icos svg { width: 18px; height: 18px; color: var(--accent); display: block; }
     .meal-name-line { font-size: 15.5px; font-weight: 600; }
     .meal-detail { margin-top: 8px; }
     .meal-detail .sub { margin: 0; color: var(--text-soft); font-size: 13.5px; line-height: 1.5; }
@@ -446,9 +448,9 @@
       // 식사: 식당이 정해지면 name/address 를 채우면 지도 버튼과 함께 표시됩니다.
       // (name 이 비어 있으면 '확정 후 안내'로 표시)
       MEALS: [
-        { day: "8/22(토)", slot: "점심", name: "", address: "", note: "고기" },
-        { day: "8/22(토)", slot: "저녁", name: "츠키", address: "경상남도 진주시 도동로 266", note: "" },
-        { day: "8/23(일)", slot: "아점", name: "", address: "", note: "해장" },
+        { day: "8/22(토)", slot: "점심", name: "", address: "", icons: ["cow", "pig"] },
+        { day: "8/22(토)", slot: "저녁", name: "츠키", address: "경상남도 진주시 도동로 266", icons: ["fish"] },
+        { day: "8/23(일)", slot: "아점", name: "", address: "", icons: ["stew"] },
       ],
     };
 
@@ -531,6 +533,18 @@
       else { numEl.textContent = "D+" + Math.abs(diffDays); lblEl.textContent = "모임 후"; }
     }
 
+    // 식사 힌트 아이콘 (깔끔한 라인 스타일 · 앤센트 컬러 공용 테마)
+    const MEAL_ICONS = {
+      cow: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 6.5C5 5.5 4.5 4 5 2.5"/><path d="M17.5 6.5C19 5.5 19.5 4 19 2.5"/><path d="M6.5 7.6 3 7"/><path d="M17.5 7.6 21 7"/><path d="M6 8.5c0-2.8 2.7-4.5 6-4.5s6 1.7 6 4.5c0 2.6-1.2 4.3-2.8 5.4C13.9 14.7 13 15.5 12 15.5s-1.9-.8-3.2-1.6C7.2 12.8 6 11.1 6 8.5z"/><ellipse cx="12" cy="15" rx="3" ry="2.1"/><path d="M10.8 15h0M13.2 15h0" stroke-width="1.7"/><path d="M9.5 9.5h0M14.5 9.5h0" stroke-width="1.7"/></svg>`,
+      pig: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 6 5.5 3 9 4.5"/><path d="M16.5 6 18.5 3 15 4.5"/><circle cx="12" cy="12.5" r="7"/><ellipse cx="12" cy="13.5" rx="3.2" ry="2.4"/><path d="M11 13.5h0M13 13.5h0" stroke-width="1.9"/><path d="M9 10h0M15 10h0" stroke-width="1.7"/></svg>`,
+      fish: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 12c2.2-3.6 6.8-5.3 11-3.4 1.7.8 3.2 2 4.5 3.4-1.3 1.4-2.8 2.6-4.5 3.4-4.2 1.9-8.8.2-11-3.4z"/><path d="M6.5 12 2.5 9v6z"/><path d="M16.5 10.5h0" stroke-width="1.8"/></svg>`,
+      stew: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 2.5c-.7.9-.7 1.9 0 2.8"/><path d="M12 2c-.7.9-.7 1.9 0 2.8"/><path d="M15.5 2.5c-.7.9-.7 1.9 0 2.8"/><path d="M3 8.5h18"/><path d="M4.5 8.5 5.4 18a2.6 2.6 0 0 0 2.6 2.3h8a2.6 2.6 0 0 0 2.6-2.3l.9-9.5"/><path d="M4.7 11H2.3"/><path d="M19.3 11h2.4"/></svg>`,
+    };
+    function mealIconsHtml(icons) {
+      if (!icons || !icons.length) return "";
+      return `<span class="meal-icos">${icons.map(k => MEAL_ICONS[k] || "").join("")}</span>`;
+    }
+
     function renderMeals() {
       const box = document.getElementById("meals");
       if (!box) return;
@@ -544,8 +558,7 @@
       box.innerHTML = groups.map(g => {
         const rows = g.items.map(m => {
           if (!m.name) {
-            const note = m.note ? ` <span class="meal-note">(${esc(m.note)})</span>` : "";
-            return `<div class="meal-row"><div class="meal-slot">${esc(m.slot)}</div><div class="meal-val muted">확정 후 안내${note}</div></div>`;
+            return `<div class="meal-row"><div class="meal-slot">${esc(m.slot)}</div><div class="meal-val muted">확정 후 안내${mealIconsHtml(m.icons)}</div></div>`;
           }
           // 식당명 + (주소가 있으면) 주소·복사버튼·내비 3종 바로가기 — 숙소 카드와 동일 구성
           const detail = m.address
@@ -557,7 +570,7 @@
                  ${navRowHtml()}
                </div>`
             : "";
-          return `<div class="meal-row"><div class="meal-slot">${esc(m.slot)}</div><div class="meal-val"><div class="meal-name-line">${esc(m.name)}</div>${detail}</div></div>`;
+          return `<div class="meal-row"><div class="meal-slot">${esc(m.slot)}</div><div class="meal-val"><div class="meal-name-line">${esc(m.name)}${mealIconsHtml(m.icons)}</div>${detail}</div></div>`;
         }).join("");
         return `<div class="meal"><div class="meal-when">${esc(g.day)}</div>${rows}</div>`;
       }).join("");
