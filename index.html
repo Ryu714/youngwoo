@@ -213,6 +213,7 @@
     .meal-icos { display: flex; flex-direction: column; align-items: center; gap: 6px; }
     .meal-icos svg { width: 24px; height: 24px; color: var(--text-faint); display: block; }
     .meal-name-line { font-size: 15.5px; font-weight: 600; }
+    .meal-time { color: var(--text-soft); font-weight: 500; font-size: 13.5px; margin-left: 3px; }
     .meal-detail { margin-top: 8px; }
     .meal-detail .sub { margin: 0; color: var(--text-soft); font-size: 13.5px; line-height: 1.5; }
     .meal-detail .nav-row { margin-top: 8px; }
@@ -449,7 +450,7 @@
       // (name 이 비어 있으면 '확정 후 안내'로 표시)
       MEALS: [
         { day: "8/22(토)", slot: "점심", name: "", address: "", icons: ["cow", "pig"] },
-        { day: "8/22(토)", slot: "저녁", name: "츠키", address: "경상남도 진주시 도동로 266", icons: ["fish"] },
+        { day: "8/22(토)", slot: "저녁", name: "츠키", address: "경상남도 진주시 도동로 266", time: "18:00 ~ ", icons: ["fish"] },
         { day: "8/23(일)", slot: "아점", name: "", address: "", icons: ["stew"] },
       ],
     };
@@ -570,7 +571,7 @@
                  ${navRowHtml()}
                </div>`
             : "";
-          return `<div class="meal-row"><div class="meal-slot">${esc(m.slot)}${mealIconsHtml(m.icons)}</div><div class="meal-val"><div class="meal-name-line">${esc(m.name)}</div>${detail}</div></div>`;
+          return `<div class="meal-row"><div class="meal-slot">${esc(m.slot)}${mealIconsHtml(m.icons)}</div><div class="meal-val"><div class="meal-name-line">${esc(m.name)}${m.time ? ` <span class="meal-time">(${esc(m.time)})</span>` : ""}</div>${detail}</div></div>`;
         }).join("");
         return `<div class="meal"><div class="meal-when">${esc(g.day)}</div>${rows}</div>`;
       }).join("");
