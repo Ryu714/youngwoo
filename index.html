@@ -206,13 +206,13 @@
     .meal-row { display: flex; gap: 12px; align-items: baseline; margin-top: 7px; }
     /* 같은 날짜 안, 식사 사이 얇은 구분선 (점심↔저녁 등) */
     .meal-row + .meal-row { margin-top: 11px; padding-top: 11px; border-top: 1px solid var(--border-soft); }
-    .meal-slot { flex: none; width: 44px; font-size: 13px; color: var(--text-faint); font-weight: 600; }
+    .meal-slot { flex: none; width: 56px; font-size: 13px; color: var(--text-faint); font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
     .meal-val { margin: 0; flex: 1; min-width: 0; font-size: 15.5px; font-weight: 600; line-height: 1.4; }
-    .meal-val.muted { color: var(--text-faint); font-weight: 500; display: inline-flex; align-items: center; }
+    .meal-val.muted { color: var(--text-faint); font-weight: 500; }
     .meal-note { color: var(--text-soft); font-weight: 500; }
-    .meal-icos { display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; }
-    .meal-icos svg { width: 21px; height: 21px; color: var(--accent); display: block; }
-    .meal-name-line { font-size: 15.5px; font-weight: 600; display: flex; align-items: center; }
+    .meal-icos { display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
+    .meal-icos svg { width: 24px; height: 24px; color: var(--accent); display: block; }
+    .meal-name-line { font-size: 15.5px; font-weight: 600; }
     .meal-detail { margin-top: 8px; }
     .meal-detail .sub { margin: 0; color: var(--text-soft); font-size: 13.5px; line-height: 1.5; }
     .meal-detail .nav-row { margin-top: 8px; }
@@ -558,7 +558,7 @@
       box.innerHTML = groups.map(g => {
         const rows = g.items.map(m => {
           if (!m.name) {
-            return `<div class="meal-row"><div class="meal-slot">${esc(m.slot)}</div><div class="meal-val muted">확정 후 안내${mealIconsHtml(m.icons)}</div></div>`;
+            return `<div class="meal-row"><div class="meal-slot">${esc(m.slot)}${mealIconsHtml(m.icons)}</div><div class="meal-val muted">확정 후 안내</div></div>`;
           }
           // 식당명 + (주소가 있으면) 주소·복사버튼·내비 3종 바로가기 — 숙소 카드와 동일 구성
           const detail = m.address
@@ -570,7 +570,7 @@
                  ${navRowHtml()}
                </div>`
             : "";
-          return `<div class="meal-row"><div class="meal-slot">${esc(m.slot)}</div><div class="meal-val"><div class="meal-name-line">${esc(m.name)}${mealIconsHtml(m.icons)}</div>${detail}</div></div>`;
+          return `<div class="meal-row"><div class="meal-slot">${esc(m.slot)}${mealIconsHtml(m.icons)}</div><div class="meal-val"><div class="meal-name-line">${esc(m.name)}</div>${detail}</div></div>`;
         }).join("");
         return `<div class="meal"><div class="meal-when">${esc(g.day)}</div>${rows}</div>`;
       }).join("");
