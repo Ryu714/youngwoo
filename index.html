@@ -201,10 +201,17 @@
     .meal { padding: 13px 0; border-top: 1px solid var(--border-soft); }
     .meal:first-child { padding-top: 0; border-top: 0; }
     .meal:last-child { padding-bottom: 0; }
-    .meal-when { font-size: 12.5px; color: var(--accent); font-weight: 700; letter-spacing: .02em; }
-    .meal-name { font-size: 15.5px; font-weight: 600; margin-top: 5px; }
-    .meal-name.muted { color: var(--text-faint); font-weight: 500; }
+    .meal-when { font-size: 12.5px; color: var(--accent); font-weight: 700; letter-spacing: .02em; margin-bottom: 4px; }
+    /* 점심·저녁·아점 라벨: 숙소 카드 체크인/체크아웃(dt)과 동일 폰트 */
+    .meal-row { display: flex; gap: 12px; align-items: baseline; margin-top: 7px; }
+    .meal-slot { flex: none; width: 44px; font-size: 13px; color: var(--text-faint); font-weight: 600; }
+    .meal-val { margin: 0; flex: 1; min-width: 0; font-size: 15.5px; font-weight: 600; line-height: 1.4; }
+    .meal-val.muted { color: var(--text-faint); font-weight: 500; }
     .meal-note { color: var(--text-soft); font-weight: 500; }
+    .meal-name-line { font-size: 15.5px; font-weight: 600; }
+    .meal-detail { margin-top: 8px; }
+    .meal-detail .sub { margin: 0; color: var(--text-soft); font-size: 13.5px; line-height: 1.5; }
+    .meal-detail .nav-row { margin-top: 8px; }
     .meal-addr { font-size: 13px; color: var(--text-soft); margin-top: 3px; line-height: 1.5; }
     .meal-map {
       display: inline-flex; align-items: center; gap: 5px; margin-top: 9px;
@@ -437,9 +444,9 @@
       // 식사: 식당이 정해지면 name/address 를 채우면 지도 버튼과 함께 표시됩니다.
       // (name 이 비어 있으면 '확정 후 안내'로 표시)
       MEALS: [
-        { when: "8/22(토) 점심", name: "", address: "", note: "고기" },
-        { when: "8/22(토) 저녁", name: "", address: "", note: "" },
-        { when: "8/23(일) 아점", name: "", address: "", note: "해장" },
+        { day: "8/22(토)", slot: "점심", name: "", address: "", note: "고기" },
+        { day: "8/22(토)", slot: "저녁", name: "츠키", address: "경상남도 진주시 도동로 266", note: "" },
+        { day: "8/23(일)", slot: "아점", name: "", address: "", note: "해장" },
       ],
     };
 
@@ -525,38 +532,55 @@
     function renderMeals() {
       const box = document.getElementById("meals");
       if (!box) return;
-      box.innerHTML = (CONFIG.MEALS || []).map(m => {
-        if (!m.name) {
-          const note = m.note ? ` <span class="meal-note">(${esc(m.note)})</span>` : "";
-          return `<div class="meal"><div class="meal-when">${esc(m.when)}</div><div class="meal-name muted">확정 후 안내${note}</div></div>`;
-        }
-        const addr = m.address
-          ? `<div class="meal-addr">${esc(m.address)}</div>
-             <a class="meal-map" href="https://map.naver.com/p/search/${encodeURIComponent(m.address)}" rel="noopener"><span class="nd"></span>지도</a>`
-          : "";
-        return `<div class="meal">
-          <div class="meal-when">${esc(m.when)}</div>
-          <div class="meal-name">${esc(m.name)}</div>
-          ${addr}
-        </div>`;
+      // 날짜별로 묶어서(토/일 사이에만 줄 구분) 점심·저녁·아점을 각 행으로 표시
+      const groups = [];
+      (CONFIG.MEALS || []).forEach(m => {
+        let g = groups.find(x => x.day === m.day);
+        if (!g) { g = { day: m.day, items: [] }; groups.push(g); }
+        g.items.push(m);
+      });
+      box.innerHTML = groups.map(g => {
+        const rows = g.items.map(m => {
+          if (!m.name) {
+            const note = m.note ? ` <span class="meal-note">(${esc(m.note)})</span>` : "";
+            return `<div class="meal-row"><div class="meal-slot">${esc(m.slot)}</div><div class="meal-val muted">확정 후 안내${note}</div></div>`;
+          }
+          // 식당명 + (주소가 있으면) 주소·복사버튼·내비 3종 바로가기 — 숙소 카드와 동일 구성
+          const detail = m.address
+            ? `<div class="meal-detail" data-addr="${esc(m.address)}">
+                 <div class="addr-row">
+                   <p class="sub">${esc(m.address)}</p>
+                   ${copyBtnHtml()}
+                 </div>
+                 ${navRowHtml()}
+               </div>`
+            : "";
+          return `<div class="meal-row"><div class="meal-slot">${esc(m.slot)}</div><div class="meal-val"><div class="meal-name-line">${esc(m.name)}</div>${detail}</div></div>`;
+        }).join("");
+        return `<div class="meal"><div class="meal-when">${esc(g.day)}</div>${rows}</div>`;
       }).join("");
+
+      // 각 식당 상세의 복사/내비 버튼 연결
+      box.querySelectorAll(".meal-detail").forEach(el => {
+        const addressText = el.getAttribute("data-addr");
+        wireNavButtons(
+          el.querySelector(".nav-tmap"),
+          el.querySelector(".nav-naver"),
+          el.querySelector(".nav-kakao"),
+          addressText
+        );
+        wireCopyBtn(el.querySelector(".copy-btn"), addressText);
+      });
     }
 
-    function renderLodging() {
-      document.getElementById("lodgingName").textContent = CONFIG.LODGING_NAME;
-      if (CONFIG.LODGING_ADDRESS) {
-        document.getElementById("lodgingAddr").textContent = CONFIG.LODGING_ADDRESS;
-      }
-      document.getElementById("airbnbBtn").href = CONFIG.AIRBNB_URL;
-
-      // 내비/지도 바로가기 — 각 앱에서 '주소'로 검색되게 (도착지가 주소로 표시됨)
-      const addr = encodeURIComponent(CONFIG.LODGING_ADDRESS);
-      document.getElementById("naviNaver").href = `https://map.naver.com/p/search/${addr}`;
-      document.getElementById("naviKakao").href = `https://map.kakao.com/link/search/${addr}`;
-
+    // 주소 문자열로 T맵/네이버/카카오 바로가기 버튼 연결 (숙소·식당 공용)
+    function wireNavButtons(tmapBtn, naverBtn, kakaoBtn, addressText) {
+      const addr = encodeURIComponent(addressText);
+      if (naverBtn) naverBtn.href = `https://map.naver.com/p/search/${addr}`;
+      if (kakaoBtn) kakaoBtn.href = `https://map.kakao.com/link/search/${addr}`;
+      if (!tmapBtn) return;
       // T맵은 모바일 앱 전용(웹 지도 없음). 모바일=앱 스킴, 미설치 시 스토어. PC=티맵 안내 사이트.
       const tmapUrl = `tmap://search?name=${addr}`;
-      const tmapBtn = document.getElementById("naviTmap");
       tmapBtn.href = tmapUrl;
       tmapBtn.addEventListener("click", (e) => {
         e.preventDefault();
@@ -579,27 +603,59 @@
         });
         window.location.href = tmapUrl;
       });
+    }
 
-      // 주소 복사 버튼
-      const copyBtn = document.getElementById("copyAddrBtn");
-      if (copyBtn) {
-        copyBtn.addEventListener("click", async () => {
-          const addr = CONFIG.LODGING_ADDRESS || document.getElementById("lodgingAddr").textContent.trim();
-          let ok = false;
-          try { await navigator.clipboard.writeText(addr); ok = true; }
-          catch (e) {
-            const ta = document.createElement("textarea");
-            ta.value = addr; ta.style.position = "fixed"; ta.style.opacity = "0";
-            document.body.appendChild(ta); ta.focus(); ta.select();
-            try { ok = document.execCommand("copy"); } catch (_) {}
-            document.body.removeChild(ta);
-          }
-          if (ok) {
-            copyBtn.classList.add("copied");
-            setTimeout(() => copyBtn.classList.remove("copied"), 1500);
-          }
-        });
+    // 주소 복사 버튼 연결 (숙소·식당 공용)
+    function wireCopyBtn(copyBtn, addressText) {
+      if (!copyBtn) return;
+      copyBtn.addEventListener("click", async () => {
+        let ok = false;
+        try { await navigator.clipboard.writeText(addressText); ok = true; }
+        catch (e) {
+          const ta = document.createElement("textarea");
+          ta.value = addressText; ta.style.position = "fixed"; ta.style.opacity = "0";
+          document.body.appendChild(ta); ta.focus(); ta.select();
+          try { ok = document.execCommand("copy"); } catch (_) {}
+          document.body.removeChild(ta);
+        }
+        if (ok) {
+          copyBtn.classList.add("copied");
+          setTimeout(() => copyBtn.classList.remove("copied"), 1500);
+        }
+      });
+    }
+
+    // 주소 복사 버튼 HTML (숙소·식당 공용)
+    function copyBtnHtml() {
+      return `<button class="copy-btn" type="button" aria-label="주소 복사" title="주소 복사">
+        <svg class="ico-copy" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        <svg class="ico-check" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+      </button>`;
+    }
+
+    // 내비 3종 바로가기 HTML (숙소·식당 공용)
+    function navRowHtml() {
+      return `<div class="nav-row">
+        <a class="navbtn nav-tmap" rel="noopener"><span class="navbtn-name"><span class="nd" style="background:#1B6FE3"></span>T맵</span><span class="navbtn-sub">바로가기</span></a>
+        <a class="navbtn nav-naver" rel="noopener"><span class="navbtn-name"><span class="nd" style="background:#03C75A"></span>네이버지도</span><span class="navbtn-sub">바로가기</span></a>
+        <a class="navbtn nav-kakao" rel="noopener"><span class="navbtn-name"><span class="nd" style="background:#FEE500"></span>카카오맵</span><span class="navbtn-sub">바로가기</span></a>
+      </div>`;
+    }
+
+    function renderLodging() {
+      document.getElementById("lodgingName").textContent = CONFIG.LODGING_NAME;
+      if (CONFIG.LODGING_ADDRESS) {
+        document.getElementById("lodgingAddr").textContent = CONFIG.LODGING_ADDRESS;
       }
+      document.getElementById("airbnbBtn").href = CONFIG.AIRBNB_URL;
+
+      wireNavButtons(
+        document.getElementById("naviTmap"),
+        document.getElementById("naviNaver"),
+        document.getElementById("naviKakao"),
+        CONFIG.LODGING_ADDRESS
+      );
+      wireCopyBtn(document.getElementById("copyAddrBtn"), CONFIG.LODGING_ADDRESS);
     }
 
     function renderRoster(roster) {
