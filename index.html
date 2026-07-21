@@ -153,13 +153,13 @@
     .block { flex: none; }
 
     /* ===================== 일정 (깔끔한 텍스트, 이모지 없음) ===================== */
-    .sched { text-align: center; padding: 8px 20px 6px; }
+    .sched { text-align: center; padding: 8px 20px 2px; }
     .sched-dates { display: flex; align-items: center; justify-content: center; gap: 22px; }
     .sd { display: flex; flex-direction: column; align-items: center; gap: 6px; }
     .sd-dow { font-size: 12.5px; color: var(--accent); font-weight: 700; letter-spacing: .05em; }
     .sd-day { font-size: 25px; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
     .sd-sep { width: 34px; height: 1px; background: var(--border); position: relative; top: 10px; }
-    .sched-note { margin-top: 13px; font-size: 13.5px; color: var(--text-soft); letter-spacing: .02em; }
+    .sched-note { margin-top: 10px; font-size: 13.5px; color: var(--text-soft); letter-spacing: .02em; }
 
     /* ===================== 숙소 (타이틀 위 아이콘 제거) ===================== */
     .lodging h3 { margin: 0 0 6px; font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
@@ -184,7 +184,7 @@
     .addr-warn b { font-weight: 700; }
     .nav-row { display: flex; gap: 8px; margin-top: 12px; }
     .navbtn {
-      flex: 1; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+      flex: 1; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
       padding: 5px 6px; border-radius: 10px;
       text-decoration: none; background: var(--surface-2); color: var(--text); border: 1px solid var(--border);
     }
@@ -204,6 +204,7 @@
     .meal-when { font-size: 12.5px; color: var(--accent); font-weight: 700; letter-spacing: .02em; }
     .meal-name { font-size: 15.5px; font-weight: 600; margin-top: 5px; }
     .meal-name.muted { color: var(--text-faint); font-weight: 500; }
+    .meal-note { color: var(--text-soft); font-weight: 500; }
     .meal-addr { font-size: 13px; color: var(--text-soft); margin-top: 3px; line-height: 1.5; }
     .meal-map {
       display: inline-flex; align-items: center; gap: 5px; margin-top: 9px;
@@ -436,8 +437,9 @@
       // 식사: 식당이 정해지면 name/address 를 채우면 지도 버튼과 함께 표시됩니다.
       // (name 이 비어 있으면 '확정 후 안내'로 표시)
       MEALS: [
-        { when: "8/22(토) 저녁", name: "", address: "" },
-        { when: "8/23(일) 아침", name: "", address: "" },
+        { when: "8/22(토) 점심", name: "", address: "", note: "고기" },
+        { when: "8/22(토) 저녁", name: "", address: "", note: "" },
+        { when: "8/23(일) 아점", name: "", address: "", note: "해장" },
       ],
     };
 
@@ -525,7 +527,8 @@
       if (!box) return;
       box.innerHTML = (CONFIG.MEALS || []).map(m => {
         if (!m.name) {
-          return `<div class="meal"><div class="meal-when">${esc(m.when)}</div><div class="meal-name muted">확정 후 안내</div></div>`;
+          const note = m.note ? ` <span class="meal-note">(${esc(m.note)})</span>` : "";
+          return `<div class="meal"><div class="meal-when">${esc(m.when)}</div><div class="meal-name muted">확정 후 안내${note}</div></div>`;
         }
         const addr = m.address
           ? `<div class="meal-addr">${esc(m.address)}</div>
