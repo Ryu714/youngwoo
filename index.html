@@ -152,14 +152,20 @@
     }
     .block { flex: none; }
 
-    /* ===================== 일정 (깔끔한 텍스트, 이모지 없음) ===================== */
-    .sched { text-align: center; padding: 8px 20px 2px; }
-    .sched-dates { display: flex; align-items: center; justify-content: center; gap: 22px; }
-    .sd { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-    .sd-dow { font-size: 12.5px; color: var(--accent); font-weight: 700; letter-spacing: .05em; }
-    .sd-day { font-size: 25px; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
-    .sd-sep { width: 34px; height: 1px; background: var(--border); position: relative; top: 10px; }
-    .sched-note { margin-top: 10px; font-size: 13.5px; color: var(--text-soft); letter-spacing: .02em; }
+    /* ===================== 일정 (식당 카드와 동일 포맷) ===================== */
+    .sched-day { padding: 13px 0; border-top: 1px solid var(--border-soft); }
+    .sched-day:first-child { padding-top: 0; border-top: 0; }
+    .sched-day:last-child { padding-bottom: 0; }
+    .sched-when { font-size: 12.5px; color: var(--accent); font-weight: 700; letter-spacing: .02em; margin-bottom: 4px; }
+    .sched-row { display: flex; gap: 12px; align-items: baseline; margin-top: 7px; }
+    /* 같은 날짜 안, 일정 사이 얇은 구분선 */
+    .sched-row + .sched-row { margin-top: 11px; padding-top: 11px; border-top: 1px solid var(--border-soft); }
+    /* 시간: 시작/~/종료 3열 고정 — 시작 시간이 없어도 종료 시간 열이 어긋나지 않게 */
+    .sched-time { flex: none; width: 92px; display: grid; grid-template-columns: 36px 9px 36px; column-gap: 4px; align-items: baseline; font-size: 13px; color: var(--text-faint); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .sched-time .t-sep { text-align: center; }
+    .sched-val { flex: 1; min-width: 0; font-size: 15.5px; font-weight: 600; line-height: 1.4; }
+    /* 장소: 줄바꿈 없이 내용 옆에 — 식당 카드의 시간 표기(.meal-time)와 동일 */
+    .sched-place { color: var(--text-soft); font-weight: 500; font-size: 13.5px; margin-left: 4px; white-space: nowrap; }
 
     /* ===================== 숙소 (타이틀 위 아이콘 제거) ===================== */
     .lodging h3 { margin: 0 0 6px; font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
@@ -324,7 +330,6 @@
       .hero { padding-top: calc(env(safe-area-inset-top) + 18px); padding-bottom: 18px; }
       .hero h1 { font-size: 25px; }
       .panel { padding: 14px; }
-      .sched { padding: 20px; }
       .card { padding: 16px; }
     }
   </style>
@@ -355,13 +360,8 @@
       <section class="panel active" id="p-info" role="tabpanel" aria-labelledby="tab-info">
         <div class="block">
           <h2 class="sec-title">일정</h2>
-          <div class="card sched">
-            <div class="sched-dates">
-              <div class="sd"><span class="sd-dow">토요일</span><span class="sd-day">08.22</span></div>
-              <span class="sd-sep" aria-hidden="true"></span>
-              <div class="sd"><span class="sd-dow">일요일</span><span class="sd-day">08.23</span></div>
-            </div>
-            <p class="sched-note">2026년 · 1박 2일 · 진주</p>
+          <div class="card">
+            <div id="schedule"></div>
           </div>
         </div>
 
@@ -445,6 +445,16 @@
       LODGING_NAME: "Airbnb 진주",
       LODGING_ADDRESS: "경상남도 진주시 북장대로11번길 5",
       AIRBNB_URL: "https://www.airbnb.co.kr/rooms/1054867816529566158?check_in=2026-08-22&check_out=2026-08-23&guests=1&adults=12&s=67&unique_share_id=e334120e-8461-4621-a729-bac4d83aa94b",
+
+      // 일정: 날짜별 시간표. place 는 선택(장소가 있으면 내용 아래 작게 표시)
+      SCHEDULE: [
+        { day: "8/22(토)", time: "~ 13:30", title: "점심식사" },
+        { day: "8/22(토)", time: "14:00 ~ 16:00", title: "운동", place: "LH 본사 족구장" },
+        { day: "8/22(토)", time: "16:00 ~ 17:30", title: "사우나 및 숙소 체크인" },
+        { day: "8/22(토)", time: "18:00 ~", title: "저녁식사 및 2차" },
+        { day: "8/23(일)", time: "~ 10:00", title: "기상. 숙소정리 및 체크아웃" },
+        { day: "8/23(일)", time: "10:00 ~ 12:00", title: "아점 해장 및 해산" },
+      ],
 
       // 식사: 식당이 정해지면 name/address 를 채우면 지도 버튼과 함께 표시됩니다.
       // (name 이 비어 있으면 '확정 후 안내'로 표시)
@@ -544,6 +554,30 @@
     function mealIconsHtml(icons) {
       if (!icons || !icons.length) return "";
       return `<span class="meal-icos">${icons.map(k => MEAL_ICONS[k] || "").join("")}</span>`;
+    }
+
+    function renderSchedule() {
+      const box = document.getElementById("schedule");
+      if (!box) return;
+      // 날짜별로 묶어서(토/일 사이에만 줄 구분) 시간·내용을 각 행으로 표시 — 식당 카드와 동일 구성
+      const groups = [];
+      (CONFIG.SCHEDULE || []).forEach(s => {
+        let g = groups.find(x => x.day === s.day);
+        if (!g) { g = { day: s.day, items: [] }; groups.push(g); }
+        g.items.push(s);
+      });
+      box.innerHTML = groups.map(g => {
+        const rows = g.items.map(s => {
+          const place = s.place ? ` <span class="sched-place">(${esc(s.place)})</span>` : "";
+          // "시작 ~ 종료" 를 3칸으로 나눠, 시작 시간이 없어도 ~/종료 위치가 다른 줄과 같도록
+          const raw = String(s.time || "");
+          const hasSep = raw.includes("~");
+          const [st, en] = hasSep ? raw.split("~") : [raw, ""];
+          const time = `<span class="t-start">${esc(st.trim())}</span><span class="t-sep">${hasSep ? "~" : ""}</span><span class="t-end">${esc((en || "").trim())}</span>`;
+          return `<div class="sched-row"><div class="sched-time">${time}</div><div class="sched-val">${esc(s.title)}${place}</div></div>`;
+        }).join("");
+        return `<div class="sched-day"><div class="sched-when">${esc(g.day)}</div>${rows}</div>`;
+      }).join("");
     }
 
     function renderMeals() {
@@ -811,6 +845,7 @@
     (async function init() {
       renderDday();
       renderLodging();
+      renderSchedule();
       renderMeals();
       setupTabs();
       syncHeroLine();
