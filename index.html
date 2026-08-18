@@ -161,7 +161,7 @@
     /* 같은 날짜 안, 일정 사이 얇은 구분선 */
     .sched-row + .sched-row { margin-top: 11px; padding-top: 11px; border-top: 1px solid var(--border-soft); }
     /* 시간: 시작/~/종료 3열 고정 — 시작 시간이 없어도 종료 시간 열이 어긋나지 않게 */
-    .sched-time { flex: none; width: 92px; display: grid; grid-template-columns: 36px 9px 36px; column-gap: 4px; align-items: baseline; font-size: 13px; color: var(--text-faint); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .sched-time { flex: none; width: 101px; display: grid; grid-template-columns: 42px 9px 42px; column-gap: 4px; align-items: baseline; font-size: 13px; color: var(--text-faint); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
     .sched-time .t-sep { text-align: center; }
     .sched-val { flex: 1; min-width: 0; font-size: 15.5px; font-weight: 600; line-height: 1.4; }
     /* 장소: 줄바꿈 없이 내용 옆에 — 식당 카드의 시간 표기(.meal-time)와 동일 */
@@ -448,7 +448,7 @@
 
       // 일정: 날짜별 시간표. place 는 선택(장소가 있으면 내용 아래 작게 표시)
       SCHEDULE: [
-        { day: "8/22(토)", time: "~ 13:30", title: "점심식사" },
+        { day: "8/22(토)", time: "~ 13:30", title: "점심식사", place: "아래 식당정보 참고" },
         { day: "8/22(토)", time: "14:00 ~ 16:00", title: "운동", place: "LH 본사 족구장" },
         { day: "8/22(토)", time: "16:00 ~ 17:30", title: "사우나 및 숙소 체크인" },
         { day: "8/22(토)", time: "18:00 ~", title: "저녁식사 및 2차" },
@@ -459,7 +459,7 @@
       // 식사: 식당이 정해지면 name/address 를 채우면 지도 버튼과 함께 표시됩니다.
       // (name 이 비어 있으면 '확정 후 안내'로 표시)
       MEALS: [
-        { day: "8/22(토)", slot: "점심", name: "", address: "", icons: ["cow", "pig"] },
+        { day: "8/22(토)", slot: "점심", name: "태영한우 진주혁신도시점", address: "경남 진주시 에나로175번길 11", time: "11:30 ~ ", icons: ["cow"] },
         { day: "8/22(토)", slot: "저녁", name: "츠키", address: "경상남도 진주시 도동로 266", time: "18:00 ~ ", icons: ["fish"] },
         { day: "8/23(일)", slot: "아점", name: "", address: "", icons: ["stew"] },
       ],
