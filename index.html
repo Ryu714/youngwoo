@@ -461,7 +461,7 @@
       // 식사: 식당이 정해지면 name/address 를 채우면 지도 버튼과 함께 표시됩니다.
       // (name 이 비어 있으면 '확정 후 안내'로 표시)
       MEALS: [
-        { day: "8/22(토)", slot: "점심", name: "태영한우 진주혁신도시점", address: "경남 진주시 에나로175번길 11", time: "11:30 ~ ", icons: ["cow"] },
+        { day: "8/22(토)", slot: "점심", name: "태영한우 진주혁신도시점", address: "경남 진주시 에나로175번길 11", time: "11:30 ~ ", icons: ["cow"], navByName: true },
         { day: "8/22(토)", slot: "저녁", name: "츠키", address: "경상남도 진주시 도동로 266", time: "18:00 ~ ", icons: ["fish"] },
         { day: "8/23(일)", slot: "아점", name: "대문집", address: "경남 진주시 도동로247번길 9-1", time: "11:00 ~ ", icons: ["stew"] },
       ],
@@ -603,7 +603,7 @@
           }
           // 식당명 + (주소가 있으면) 주소·복사버튼·내비 3종 바로가기 — 숙소 카드와 동일 구성
           const detail = m.address
-            ? `<div class="meal-detail" data-addr="${esc(m.address)}">
+            ? `<div class="meal-detail" data-addr="${esc(m.address)}" data-nav="${esc(m.navByName ? m.name : m.address)}">
                  <div class="addr-row">
                    <p class="sub">${esc(m.address)}</p>
                    ${copyBtnHtml()}
@@ -619,11 +619,12 @@
       // 각 식당 상세의 복사/내비 버튼 연결
       box.querySelectorAll(".meal-detail").forEach(el => {
         const addressText = el.getAttribute("data-addr");
+        // 내비 검색어: 기본은 주소, navByName 인 식당은 식당 이름 (복사 버튼은 항상 주소)
         wireNavButtons(
           el.querySelector(".nav-tmap"),
           el.querySelector(".nav-naver"),
           el.querySelector(".nav-kakao"),
-          addressText
+          el.getAttribute("data-nav") || addressText
         );
         wireCopyBtn(el.querySelector(".copy-btn"), addressText);
       });
