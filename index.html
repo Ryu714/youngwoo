@@ -435,7 +435,7 @@
     /* ======================================================
        🔄 자동 새 버전 감지 — 배포 시 version.txt 와 함께 갱신
        ====================================================== */
-    const BUILD = "20260819-1";
+    const BUILD = "20260819-2";
     fetch("version.txt?cb=" + Date.now(), { cache: "no-store" })
       .then((r) => (r.ok ? r.text() : ""))
       .then((v) => {
@@ -476,7 +476,7 @@
       // 식사: 식당이 정해지면 name/address 를 채우면 지도 버튼과 함께 표시됩니다.
       // (name 이 비어 있으면 '확정 후 안내'로 표시)
       MEALS: [
-        { day: "8/22(토)", slot: "점심", name: "진주교방한우 진주혁신도시점", address: "경남 진주시 소호로 19번길 29", time: "11:30 ~ ", icons: ["cow"], navByName: true },
+        { day: "8/22(토)", slot: "점심", name: "진주교방한우 진주혁신도시점", address: "경남 진주시 소호로 19번길 29", time: "11:30 ~ ", icons: ["cow"], navQuery: "진주교방한우" },
         { day: "8/22(토)", slot: "저녁", name: "츠키", address: "경상남도 진주시 도동로 266", time: "18:00 ~ ", icons: ["fish"] },
         { day: "8/23(일)", slot: "아점", name: "대문집", address: "경남 진주시 도동로247번길 9-1", time: "11:00 ~ ", icons: ["stew"], navQuery: "대문집 진주하대점" },
       ],
