@@ -350,7 +350,7 @@
 
     <!-- 탭 바 -->
     <nav class="tabbar" role="tablist" aria-label="섹션">
-      <button class="tab" role="tab" aria-selected="true"  aria-controls="p-info"   id="tab-info"   data-tab="info">안내<span class="tn">일정·숙소·식당</span></button>
+      <button class="tab" role="tab" aria-selected="true"  aria-controls="p-info"   id="tab-info"   data-tab="info">안내<span class="tn">일정·식당·숙소</span></button>
       <button class="tab" role="tab" aria-selected="false" aria-controls="p-people" id="tab-people" data-tab="people">참석<span class="tn">참석·숙박</span></button>
       <button class="tab" role="tab" aria-selected="false" aria-controls="p-settle" id="tab-settle" data-tab="settle">정산<span class="tn">지출·환급</span></button>
     </nav>
@@ -364,6 +364,13 @@
           <h2 class="sec-title">일정</h2>
           <div class="card">
             <div id="schedule"></div>
+          </div>
+        </div>
+
+        <div class="block" style="margin-top:16px;">
+          <h2 class="sec-title">식당</h2>
+          <div class="card">
+            <div id="meals"></div>
           </div>
         </div>
 
@@ -397,13 +404,6 @@
             </div>
           </div>
         </div>
-
-        <div class="block" style="margin-top:16px;">
-          <h2 class="sec-title">식당</h2>
-          <div class="card">
-            <div id="meals"></div>
-          </div>
-        </div>
       </section>
 
       <!-- 참석 -->
@@ -435,7 +435,7 @@
     /* ======================================================
        🔄 자동 새 버전 감지 — 배포 시 version.txt 와 함께 갱신
        ====================================================== */
-    const BUILD = "20260819-3";
+    const BUILD = "20260820-1";
     fetch("version.txt?cb=" + Date.now(), { cache: "no-store" })
       .then((r) => (r.ok ? r.text() : ""))
       .then((v) => {
